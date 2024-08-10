@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html class="h-full">
+  <head>
+    <title>{% block title %}Luna{% endblock %}</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- DaisyUI -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/daisyui@4.11.1/dist/full.min.css"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 
+      'tailwind.config' object
+      Later: Replace it by 'tailwind.config.js' file  
+    -->
+    <script>
+      tailwind.config = {
+        daisyui: {
+          // Import all your favorite themes
+          themes: ["light", "cupcake", "night"],
+        },
+      };
+    </script>
+  </head>
+  <!-- Choose theme -->
+  <body class="flex flex-col h-full" data-theme="light">
+    <!-- Navbar -->
+    <nav class="navbar bg-base-200 px-12 py-5 shadow-md">
+
+        <div class="navbar-start text-primary text-2xl font-bold"><a href={% url 'home' %}>Luna</a></div>
+      <div class="navbar-end">
+        <div class="flex space-x-4">
+            <button class="btn btn-outline btn-primary">Home</button>
+            <button class="btn btn-outline btn-primary">About Us</button>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Content -->
+    <div class="flex-grow bg-white">
+      {% block content %}
+      <!-- Default content if any -->
+      {% endblock %}
+    </div>
+
+    <!-- Footer -->
+    <footer
+      class="footer footer-center p-10 bg-base-200 text-base-content rounded"
+    >
+      <aside>
+        <p>Copyright © 2024 - All right reserved by meetlocal.world Ltd</p>
+      </aside>
+    </footer>
+  </body>
+</html>
