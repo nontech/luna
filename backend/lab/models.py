@@ -16,6 +16,10 @@ class Users(models.Model):
     class Meta:
         db_table = 'users'  # This overrides the default table name
 
+    def __str__(self):
+        return self.full_name
+    
+
 class Classrooms(models.Model):
     name = models.CharField(max_length=50)
     description = models.TextField()
@@ -28,6 +32,10 @@ class Classrooms(models.Model):
     class Meta:
         db_table = 'classrooms'  # This overrides the default table name
 
+    def __str__(self):
+        return self.name
+    
+
 class ClassroomUsers(models.Model):
     classroom = models.ForeignKey(Classrooms, on_delete=models.CASCADE)
     user = models.ForeignKey(Users, on_delete=models.CASCADE)
@@ -38,6 +46,7 @@ class ClassroomUsers(models.Model):
 
     class Meta:
         db_table = 'classroom_users'  # This overrides the default table name
+
 
 class Exercises(models.Model):
     name = models.CharField(max_length=50)
@@ -54,6 +63,10 @@ class Exercises(models.Model):
     class Meta:
         db_table = 'exercises'  # This overrides the default table name
 
+    def __str__(self):
+        return self.name
+
+
 class Tests(models.Model):
     category = models.CharField(max_length=50)
     output = models.CharField(max_length=50)
@@ -66,6 +79,7 @@ class Tests(models.Model):
     class Meta:
         db_table = 'tests'  # This overrides the default table name
 
+
 class ClassroomExercises(models.Model):
     classroom = models.ForeignKey(Classrooms, on_delete=models.CASCADE)
     exercise = models.ForeignKey(Exercises, on_delete=models.CASCADE)
@@ -76,6 +90,7 @@ class ClassroomExercises(models.Model):
 
     class Meta:
         db_table = 'classroom_exercises'  # This overrides the default table name
+
 
 class UserExercises(models.Model):
     user = models.ForeignKey(Users, on_delete=models.CASCADE)
