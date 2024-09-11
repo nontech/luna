@@ -1,0 +1,16 @@
+{% extends 'base.html' %} 
+
+{% block content %}
+
+<h3 class="text-2xl font-semibold m-10">All Classrooms</h3>
+<ul class="space-y-4 ml-10 mr-10">
+    {% for classroom in classrooms %}
+        <li class="bg-white shadow-md rounded-lg p-4 flex items-center space-x-4">
+            <span class="text-gray-500 font-medium">{{ classroom.id }}</span>
+            <span class="text-gray-900 font-semibold">{{ classroom.name }}</span>
+            <a href="{% url 'classroom' classroom.id %}" class="text-primary font-semibold">View</a>
+        </li>
+    {% endfor %}
+</ul>
+
+{% endblock %}
