@@ -2,13 +2,20 @@
 
 {% block content %}
 
+<button 
+class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-10 ml-10">
+    <a href="{% url 'classroom_form' %}" class="text-primary font-semibold">Create Classroom</a>
+</button>
+
 <h3 class="text-2xl font-semibold m-10">All Classrooms</h3>
 <ul class="space-y-4 ml-10 mr-10">
     {% for classroom in classrooms %}
         <li class="bg-white shadow-md rounded-lg p-4 flex items-center space-x-4">
             <span class="text-gray-500 font-medium">{{ classroom.id }}</span>
             <span class="text-gray-900 font-semibold">{{ classroom.name }}</span>
-            <a href="{% url 'classroom' classroom.id %}" class="text-primary font-semibold">View</a>
+            <a href="{% url 'classroom_detail' classroom.id %}" class="text-primary font-semibold">View</a>
+            <a href="{% url 'edit_classroom' classroom.id %}" class="text-yellow-500 font-semibold">Edit</a>
+            <a href="{% url 'delete_classroom' classroom.id %}" class="text-red-500 font-semibold">Delete</a>
         </li>
     {% endfor %}
 </ul>
