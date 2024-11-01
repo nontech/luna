@@ -24,9 +24,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    // The hydration error is commonly caused by browser extensions (particularly Grammarly) adding attributes to the HTML that don't match the server-rendered content. The specific attributes mentioned (data-gr-ext-installed, cz-shortcut-listen, etc.) are added by extensions.
+    // Suppress hydration warnings
+    <html lang="en" data-theme="light" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        suppressHydrationWarning
       >
         {children}
       </body>
