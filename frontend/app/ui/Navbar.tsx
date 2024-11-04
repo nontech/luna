@@ -1,7 +1,10 @@
 "use client";
-import Link from "next/link";
 
+import { usePathname } from "next/navigation";
+import Link from "next/link";
+import clsx from "clsx";
 export default function Navbar() {
+  const pathname = usePathname();
   return (
     <div className="navbar bg-[#8c52ff]">
       {/* Left side of navbar */}
@@ -12,7 +15,14 @@ export default function Navbar() {
       </div>
       {/* Right side of navbar */}
       <div className="flex-none">
-        <Link href="/">Classrooms</Link>
+        <Link
+          href="/"
+          className={clsx("text-white hover:text-gray-200", {
+            "text-gray-200": pathname === "/",
+          })}
+        >
+          Classrooms
+        </Link>
         {/* Notifications */}
         <button className="btn btn-ghost btn-circle">
           <div className="indicator">
