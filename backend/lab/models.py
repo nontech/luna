@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils.text import slugify
 
 # Create your models here.
 from django.db import models
@@ -23,7 +24,13 @@ class Users(models.Model):
     
 
 class Classrooms(models.Model):
-    name = models.CharField(max_length=50)
+    name = models.CharField(max_length=50, unique=True)
+    slug = models.SlugField(
+        max_length=100,
+        unique=True,
+        db_index=True,
+        blank=True
+    )
     description = models.TextField()
     creator_user = models.ForeignKey(Users, on_delete=models.CASCADE)
 
@@ -35,6 +42,11 @@ class Classrooms(models.Model):
         db_table = 'classrooms'  # This overrides the default 'lab_classrooms' table name in the database
         verbose_name = 'Classroom'  # This overrides the default singular name 'Classrooms' for the model in Admin panel
         verbose_name_plural = 'Classrooms'  # This overrides the default plural name 'Classroomss' for the model in Admin panel
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.name
