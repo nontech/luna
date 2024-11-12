@@ -9,6 +9,7 @@ export default function ClassroomLayout({
   return (
     <div className="bg-gray-100">
       <Breadcrumbs />
+      {children}
     </div>
   );
 }

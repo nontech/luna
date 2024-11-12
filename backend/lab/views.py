@@ -1,5 +1,5 @@
 from django.shortcuts import get_object_or_404, render
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.urls import reverse
 from django.views import generic
 from django.shortcuts import render
@@ -7,6 +7,8 @@ from django.views.generic import DetailView
 from django.utils.safestring import mark_safe
 from .models import Classrooms, Users, Exercises, ClassroomExercises
 from .forms import ClassroomForm, ExerciseForm
+from django.views.decorators.csrf import csrf_exempt
+import json
 
 # Create your views here.
 
@@ -36,6 +38,28 @@ class ClassroomsView(generic.ListView):
     def get_queryset(self):
         return Classrooms.objects.all()
 
+@csrf_exempt
+def get_classrooms_list(request):
+    try:
+        classrooms = Classrooms.objects.all()
+        classrooms_data = [{
+            'id': classroom.id,
+            'name': classroom.name,
+            'description': classroom.description,
+            'teacher': classroom.creator_user.full_name,
+            'createdAt': classroom.created_at.isoformat(),
+            'updatedAt': classroom.updated_at.isoformat(),
+            'slug': classroom.slug,
+        } for classroom in classrooms]
+        
+        return JsonResponse({
+            'classrooms': classrooms_data
+        }, safe=False)
+        
+    except Exception as e:
+        return JsonResponse({
+            'error': str(e)
+        }, status=500)
 
 class ClassroomView(DetailView):
     model = Classrooms
@@ -46,6 +70,30 @@ class ClassroomView(DetailView):
         context = super().get_context_data(**kwargs)
         context['exercises'] = Exercises.objects.all()
         return context
+
+@csrf_exempt
+def get_classroom_details(request, slug):
+    try:
+        classroom = get_object_or_404(Classrooms, slug=slug)
+        
+        # Return classroom details as JSON
+        classroom_data = {
+            'id': classroom.id,
+            'name': classroom.name,
+            'description': classroom.description,
+            'teacher': classroom.creator_user.full_name,
+            'createdAt': classroom.created_at.isoformat(),
+            'updatedAt': classroom.updated_at.isoformat(),
+            'slug': classroom.slug,
+            # Add any other fields you need
+        }
+        
+        return JsonResponse(classroom_data)
+        
+    except Exception as e:
+        return JsonResponse({
+            'error': str(e)
+        }, status=500)
 
 class ExerciseView(DetailView):
     model = Exercises
@@ -68,7 +116,49 @@ def create_classroom(request):
     else:
         form = ClassroomForm()
     
-    return render(request, 'classroom_form.html', {'form': form})
+@csrf_exempt  # Only for development! Use proper CSRF protection in production
+def create_new_classroom(request):
+    if request.method != 'POST':
+        return JsonResponse({
+            'error': 'Only POST method is allowed'
+        }, status=405)
+        
+    try:
+        # Parse the JSON data from request body
+        data = json.loads(request.body)
+        
+        # Validate required fields
+        if 'name' not in data:
+            return JsonResponse({
+                'error': 'Name is required'
+            }, status=400)
+            
+        # Create classroom instance
+        classroom = Classrooms(
+            name=data['name'],
+            description=data.get('description', ''),
+            creator_user=Users.objects.get(username='jais')  # Temporary: Replace with actual authenticated user
+        )
+        
+        classroom.save()
+        
+        # Return the created classroom data
+        return JsonResponse({
+            'id': classroom.id,
+            'name': classroom.name,
+            'slug': classroom.slug,
+            'description': classroom.description,
+            'created_at': classroom.created_at.isoformat()
+        }, status=201)
+        
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'error': 'Invalid JSON data'
+        }, status=400)
+    except Exception as e:
+        return JsonResponse({
+            'error': str(e)
+        }, status=500)
 
 def edit_classroom(request, pk):
     classroom = get_object_or_404(Classrooms, pk=pk)
@@ -82,6 +172,53 @@ def edit_classroom(request, pk):
         form = ClassroomForm(instance=classroom)
     return render(request, 'classroom_form.html', {'form': form})
 
+@csrf_exempt
+def update_classroom(request, slug):
+    if request.method != 'PUT':
+        return JsonResponse({
+            'error': 'Method not allowed'
+        }, status=405)
+    
+    try:
+        # Print request details for debugging
+        print(f"Received request for slug: {slug}")
+        print(f"Request body: {request.body.decode('utf-8')}")
+        
+        classroom = get_object_or_404(Classrooms, slug=slug)
+        data = json.loads(request.body)
+        
+        # Update fields
+        classroom.name = data.get('name', classroom.name)
+        classroom.description = data.get('description', classroom.description)
+        classroom.save()
+        
+        response_data = {
+            'id': classroom.id,
+            'name': classroom.name,
+            'description': classroom.description,
+            'teacher': classroom.creator_user.full_name,
+            'createdAt': classroom.created_at.isoformat(),
+            'updatedAt': classroom.updated_at.isoformat(),
+            'slug': classroom.slug,
+        }
+        
+        print(f"Sending response: {response_data}")
+        return JsonResponse(response_data)
+        
+    except Classrooms.DoesNotExist:
+        return JsonResponse({
+            'error': 'Classroom not found'
+        }, status=404)
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'error': 'Invalid JSON data'
+        }, status=400)
+    except Exception as e:
+        print(f"Error in update_classroom: {str(e)}")
+        return JsonResponse({
+            'error': str(e)
+        }, status=500)
+
 def delete_classroom(request, pk):
     classroom = get_object_or_404(Classrooms, pk=pk)
     if request.method == 'POST':
@@ -89,6 +226,31 @@ def delete_classroom(request, pk):
         return HttpResponseRedirect(reverse('classrooms'))
     return render(request, 'classroom_confirm_delete.html', {'classroom': classroom})
 
+@csrf_exempt
+def delete_classroom_by_slug(request, slug):
+    if request.method != 'DELETE':
+        return JsonResponse({
+            'error': 'Method not allowed'
+        }, status=405)
+    
+    try:
+        classroom = get_object_or_404(Classrooms, slug=slug)
+        classroom.delete()
+        
+        return JsonResponse({
+            'message': 'Classroom deleted successfully',
+            'slug': slug
+        })
+        
+    except Classrooms.DoesNotExist:
+        return JsonResponse({
+            'error': 'Classroom not found'
+        }, status=404)
+    except Exception as e:
+        print(f"Error in delete_classroom: {str(e)}")
+        return JsonResponse({
+            'error': str(e)
+        }, status=500)
 
 # def exercise_form(request):
 #     return render(request, "exercise_form.html", {"form" : ExerciseForm()})

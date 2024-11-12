@@ -10,15 +10,20 @@ export default function Navbar() {
       {/* Left side of navbar */}
       <div className="flex-1">
         <Link href="/" className="text-xl">
-          <img src="/logo.png" alt="Project Luna Logo" width={60} height={60} />
+          <img
+            src="/logo.png"
+            alt="Project Luna Logo"
+            width={60}
+            height={60}
+          />
         </Link>
       </div>
       {/* Right side of navbar */}
       <div className="flex-none">
         <Link
-          href="/"
+          href="/classrooms"
           className={clsx("text-white hover:text-gray-200", {
-            "text-gray-200": pathname === "/",
+            "text-gray-200": pathname === "/classrooms",
           })}
         >
           Classrooms
