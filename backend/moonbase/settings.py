@@ -11,21 +11,55 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
 from pathlib import Path
+import environ
+import os
+
+# Initialize environ
+env = environ.Env(
+    DEBUG=(bool, False),
+    DJANGO_ALLOWED_HOSTS=(list, ['localhost', '127.0.0.1'])
+)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Environment setup
+VALID_ENV_TYPES = ['local', 'docker', 'prod']
+ENV_TYPE = os.getenv('ENV_TYPE', 'local')
+
+if ENV_TYPE not in VALID_ENV_TYPES:
+    raise ValueError(f"ENV_TYPE must be one of {VALID_ENV_TYPES}")
+
+# Load environment files based on ENV_TYPE
+if ENV_TYPE == 'local':
+    # For local, only load local settings
+    env_file = BASE_DIR / '.env.local.dev'
+elif ENV_TYPE == 'docker':
+    # For docker, only load docker settings
+    env_file = BASE_DIR / '.env.docker.dev'
+elif ENV_TYPE == 'prod':
+    # For prod, only load prod settings
+    env_file = BASE_DIR / '.env.prod'
+else:
+    raise ValueError(f"Unhandled ENV_TYPE: {ENV_TYPE}")
+
+# Verify and load the environment file
+if not env_file.exists():
+    raise FileNotFoundError(
+        f"Required environment file not found: {env_file}\n"
+        f"This file is required for ENV_TYPE={ENV_TYPE}"
+    )
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-wm@^7*s(tpa29@in$k))&$rq)fa57hi%0aq!bcex&y9rp#nre6'
+SECRET_KEY = env('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env('DEBUG')
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = env('DJANGO_ALLOWED_HOSTS')  # No need to split, already a list
 
 
 # Application definition
@@ -88,14 +122,21 @@ WSGI_APPLICATION = 'moonbase.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'luna_dev',
-        'USER': 'postgres',
-        'PASSWORD': 'postgres',
-        'HOST': 'localhost',
-        'PORT': '5432',
+        'NAME': env('DB_NAME'),
+        'USER': env('DB_USER'),
+        'PASSWORD': env('DB_PASSWORD'),
+        'HOST': env('DB_HOST'),
+        'PORT': env('DB_PORT'),
     }
 }
 
+# Add after your database settings
+print("Current ENV_TYPE:", ENV_TYPE)
+print("Database settings:")
+print(f"NAME: {env('DB_NAME')}")
+print(f"USER: {env('DB_USER')}")
+print(f"HOST: {env('DB_HOST')}")
+print(f"PORT: {env('DB_PORT')}")
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
