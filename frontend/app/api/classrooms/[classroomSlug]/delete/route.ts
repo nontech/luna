@@ -7,7 +7,7 @@ export async function DELETE(
   try {
     // Make request to Django backend
     const response = await fetch(
-      `http://localhost:8000/delete_classroom/${params.classroomSlug}/`,
+      `${process.env.API_URL}/delete_classroom/${params.classroomSlug}/`,
       {
         method: "DELETE",
         headers: {

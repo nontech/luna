@@ -17,7 +17,6 @@ import os
 # Initialize environ
 env = environ.Env(
     DEBUG=(bool, False),
-    DJANGO_ALLOWED_HOSTS=(list, ['localhost', '127.0.0.1'])
 )
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -50,6 +49,9 @@ if not env_file.exists():
         f"This file is required for ENV_TYPE={ENV_TYPE}"
     )
 
+# Add this line after your env_file validation
+environ.Env.read_env(env_file)
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
@@ -59,7 +61,7 @@ SECRET_KEY = env('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env('DEBUG')
 
-ALLOWED_HOSTS = env('DJANGO_ALLOWED_HOSTS')  # No need to split, already a list
+ALLOWED_HOSTS = env('DJANGO_ALLOWED_HOSTS').split()  # This will split on whitespace
 
 
 # Application definition

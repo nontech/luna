@@ -12,7 +12,7 @@ interface Classroom {
 
 export default async function ClassroomsPage() {
   const response = await fetch(
-    "http://localhost:3000/api/classrooms/get-all-classrooms"
+    `${process.env.NEXT_PUBLIC_APP_URL}/api/classrooms/get-all-classrooms`
   );
   const data = await response.json();
 

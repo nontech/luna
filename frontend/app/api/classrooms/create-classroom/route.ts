@@ -17,7 +17,7 @@ export async function POST(request: Request) {
     }
 
     const response = await fetch(
-      "http://localhost:8000/create_new_classroom",
+      `${process.env.API_URL}/create_new_classroom`,
       {
         method: "POST",
         headers: {

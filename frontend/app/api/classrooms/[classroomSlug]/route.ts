@@ -7,7 +7,7 @@ export async function GET(
   try {
     const slug = (await params).classroomSlug;
     const response = await fetch(
-      `http://localhost:8000/classroom/${slug}/`,
+      `${process.env.API_URL}/classroom/${slug}/`,
       {
         headers: {
           "Content-Type": "application/json",

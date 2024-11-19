@@ -22,7 +22,7 @@ export async function PUT(
 
     // Make request to Django backend
     const response = await fetch(
-      `http://localhost:8000/update_classroom/${params.classroomSlug}/`,
+      `${process.env.API_URL}/update_classroom/${params.classroomSlug}/`,
       {
         method: "PUT",
         headers: {

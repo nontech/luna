@@ -5,7 +5,7 @@ import MoreClassroomActions from "@/app/ui/MoreClassroomActions";
 
 async function getClassroom(slug: string): Promise<Classroom> {
   const response = await fetch(
-    `http://localhost:3000/api/classrooms/${slug}`
+    `${process.env.NEXT_PUBLIC_APP_URL}/api/classrooms/${slug}`
   );
   if (!response.ok) {
     throw new Error("Failed to fetch classroom");
