@@ -5,10 +5,16 @@ WORKDIR /app
 # Install pnpm
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
+# Only build-time args needed
+ARG NEXT_PUBLIC_APP_URL
+
+# Set for build process
+ENV NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL
+
 # Copy package files
 COPY package.json pnpm-lock.yaml ./
 
-# Install dependencies with frozen lockfile
+# Install dependencies
 RUN pnpm install --frozen-lockfile
 
 # Copy the rest of the application
