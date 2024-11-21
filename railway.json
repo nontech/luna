@@ -2,7 +2,7 @@
   "$schema": "https://railway.app/railway.schema.json",
   "build": {
     "builder": "DOCKERFILE",
-    "buildCommand": null
+    "dockerfilePath": "Dockerfile.prod"
   },
   "deploy": {
     "startCommand": null,
@@ -12,12 +12,10 @@
   },
   "services": {
     "frontend": {
-      "path": "frontend",
-      "dockerfile": "Dockerfile.prod"
+      "path": "frontend"
     },
     "backend": {
-      "path": "backend",
-      "dockerfile": "Dockerfile.prod"
+      "path": "backend"
     }
   }
 }
