@@ -1,0 +1,24 @@
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Install pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+# Copy package files
+COPY package.json pnpm-lock.yaml ./
+
+# Install dependencies with frozen lockfile
+RUN pnpm install --frozen-lockfile
+
+# Copy the rest of the application
+COPY . .
+
+# Build the application
+RUN pnpm build
+
+# Expose port 3000 to the outside world
+EXPOSE 3000
+
+# Use production start command
+CMD ["pnpm", "start"]
