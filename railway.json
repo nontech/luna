@@ -1,19 +1,23 @@
 {
-  "$schema": "https://railway.com/railway.schema.json",
+  "$schema": "https://railway.app/railway.schema.json",
+  "build": {
+    "builder": "DOCKERFILE",
+    "buildCommand": null
+  },
+  "deploy": {
+    "startCommand": null,
+    "healthcheckPath": "/",
+    "healthcheckTimeout": 100,
+    "restartPolicyType": "ON_FAILURE"
+  },
   "services": {
     "frontend": {
       "path": "frontend",
-      "dockerfile": "Dockerfile.prod",
-      "build": {
-        "builder": "DOCKERFILE"
-      }
+      "dockerfile": "Dockerfile.prod"
     },
     "backend": {
       "path": "backend",
-      "dockerfile": "Dockerfile.prod",
-      "build": {
-        "builder": "DOCKERFILE"
-      }
+      "dockerfile": "Dockerfile.prod"
     }
   }
 }
