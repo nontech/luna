@@ -66,7 +66,9 @@ class ClassroomUsers(models.Model):
         verbose_name_plural = 'Classroom Users'  # This overrides the default plural name 'ClassroomUserss' for the model in Admin panel
 
 class Exercises(models.Model):
+
     name = models.CharField(max_length=50)
+    slug = models.SlugField(max_length=100, blank=True)
     instructions = models.TextField()
     output_instructions = models.TextField()
     code = models.TextField()
@@ -78,9 +80,14 @@ class Exercises(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        db_table = 'exercises'  # This overrides the default 'lab_exercises' table name in the database
-        verbose_name = 'Exercise'  # This overrides the default singular name 'Exercises' for the model in Admin panel
+        db_table = 'exercises' # This overrides the default 'lab_exercises' table name in the database
+        verbose_name = 'Exercise' # This overrides the default singular name 'Exercises' for the model in Admin panel
         verbose_name_plural = 'Exercises' # This overrides the default plural name 'Exercisess' for the model in Admin panel
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.name
