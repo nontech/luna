@@ -14,7 +14,7 @@ services:
       - backend
     environment:
       - API_URL=http://backend:8000
-      - NEXT_PUBLIC_APP_URL=http://frontend:3000
+      - APP_URL=http://frontend:3000
 
   backend:
     build:
