@@ -1,16 +1,33 @@
-export const dynamic = "force-dynamic";
+import { notFound } from "next/navigation";
+import { ExerciseList } from "./components/ExerciseList";
+import { Exercise } from "@/types/exercise";
+import CreateExerciseModal from "./components/CreateExerciseModal";
 
-import { Classroom } from "@/types/classroom";
-import MoreClassroomActions from "@/app/ui/MoreClassroomActions";
+async function getClassroomExercises(
+  slug: string
+): Promise<Exercise[]> {
+  try {
+    const response = await fetch(
+      `${process.env.APP_URL}/api/classrooms/${slug}/exercises`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        cache: "no-store",
+      }
+    );
 
-async function getClassroom(slug: string): Promise<Classroom> {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_APP_URL}/api/classrooms/${slug}`
-  );
-  if (!response.ok) {
-    throw new Error("Failed to fetch classroom");
+    if (!response.ok) {
+      throw new Error("Failed to fetch exercises");
+    }
+
+    const data = await response.json();
+    return data.exercises;
+  } catch (error) {
+    console.log("Error:", error);
+    return [];
   }
-  return response.json();
 }
 
 interface PageProps {
@@ -18,41 +35,24 @@ interface PageProps {
 }
 
 export default async function ClassroomPage({ params }: PageProps) {
-  // Destructure after props to avoid the error
   const { classroomSlug } = await params;
-  const classroom = await getClassroom(classroomSlug);
+  const exercises = await getClassroomExercises(classroomSlug);
+
+  if (!exercises) {
+    notFound();
+  }
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <div className="flex justify-between items-start">
-          <h1 className="text-3xl font-bold text-gray-800">
-            {classroom.name}
-          </h1>
-          <MoreClassroomActions classroom={classroom} />
+    <div className="container mx-auto py-6">
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h2 className="text-2xl font-bold">Exercises</h2>
+          <CreateExerciseModal classroomSlug={classroomSlug} />
         </div>
-
-        <p className="mt-4 text-gray-600">{classroom.description}</p>
-
-        <div className="mt-6 grid grid-cols-2 gap-4">
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <p className="text-sm text-gray-500">Instructor</p>
-            <p className="font-medium text-gray-800">
-              {classroom.teacher}
-            </p>
-          </div>
-        </div>
-
-        <div className="mt-6 text-sm text-gray-500">
-          <p>
-            Created:{" "}
-            {new Date(classroom.createdAt).toLocaleDateString()}
-          </p>
-          <p>
-            Last Updated:{" "}
-            {new Date(classroom.updatedAt).toLocaleDateString()}
-          </p>
-        </div>
+        <ExerciseList
+          exercises={exercises}
+          classroomSlug={classroomSlug}
+        />
       </div>
     </div>
   );
