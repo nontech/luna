@@ -1,3 +1,4 @@
+import clsx from "clsx";
 import Link from "next/link";
 
 interface Classroom {
@@ -12,7 +13,7 @@ interface Classroom {
 
 export default async function ClassroomsPage() {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_APP_URL}/api/classrooms/get-all-classrooms`
+    `${process.env.APP_URL}/api/classrooms/get-all-classrooms`
   );
   const data = await response.json();
 
@@ -50,6 +51,10 @@ export default async function ClassroomsPage() {
             Created:{" "}
             {new Date(classroom.createdAt).toLocaleDateString()}
           </div>
+
+          <Link href={`/classrooms/${classroom.slug}`}>
+            <div>View Classroom</div>
+          </Link>
         </div>
       ))}
     </div>
