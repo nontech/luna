@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils.text import slugify
+import uuid 
 
 # Create your models here.
 from django.db import models
@@ -66,14 +67,16 @@ class ClassroomUsers(models.Model):
         verbose_name_plural = 'Classroom Users'  # This overrides the default plural name 'ClassroomUserss' for the model in Admin panel
 
 class Exercises(models.Model):
-
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False
+    )
     name = models.CharField(max_length=50)
     slug = models.SlugField(max_length=100, blank=True)
-    instructions = models.TextField()
-    output_instructions = models.TextField()
-    code = models.TextField()
     creator_user = models.ForeignKey(Users, on_delete=models.CASCADE)
-    test = models.OneToOneField('Tests', on_delete=models.CASCADE, null=True, blank=True)
+    instructions = models.TextField()
+    code = models.TextField()
 
     # timestamps
     created_at = models.DateTimeField(auto_now_add=True)
@@ -95,8 +98,7 @@ class Exercises(models.Model):
 
 class Tests(models.Model):
     category = models.CharField(max_length=50)
-    output = models.CharField(max_length=50)
-    exercise = models.OneToOneField(Exercises, on_delete=models.CASCADE)
+    test_feedback = models.TextField(default='')
 
     # timestamps
     created_at = models.DateTimeField(auto_now_add=True)
@@ -110,7 +112,11 @@ class Tests(models.Model):
 
 class ClassroomExercises(models.Model):
     classroom = models.ForeignKey(Classrooms, on_delete=models.CASCADE)
-    exercise = models.ForeignKey(Exercises, on_delete=models.CASCADE)
+    exercise = models.ForeignKey(
+        Exercises, 
+        on_delete=models.CASCADE,
+        to_field='id'  # Explicitly specify the UUID field
+    )
 
     # timestamps
     created_at = models.DateTimeField(auto_now_add=True)
@@ -136,3 +142,20 @@ class UserExercises(models.Model):
         db_table = 'user_exercises'  # This overrides the default 'lab_userexercises' table name in the database
         verbose_name = 'User Exercise' # This overrides the default singular name 'UserExercises' for the model in Admin panel
         verbose_name_plural = 'User Exercises' # This overrides the default plural name 'UserExercisess' for the model in Admin panel
+
+class ExerciseTests(models.Model):
+    exercise = models.ForeignKey(
+        Exercises, 
+        on_delete=models.CASCADE,
+        to_field='id'  # Explicitly specify the UUID field
+    )
+    test = models.ForeignKey(Tests, on_delete=models.CASCADE)
+
+    # timestamps
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'exercise_tests'  # This overrides the default 'lab_exercisetests' table name in the database
+        verbose_name = 'Exercise Test' # This overrides the default singular name 'ExerciseTests' for the model in Admin panel
+        verbose_name_plural = 'Exercise Tests' # This overrides the default plural name 'ExerciseTestss' for the model in Admin panel
