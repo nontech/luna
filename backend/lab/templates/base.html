@@ -24,6 +24,19 @@
         },
       };
     </script>
+    <style>
+      /* Style Django form inputs */
+      input[type="text"],
+      input[type="password"],
+      input[type="email"] {
+        @apply input input-bordered w-full;
+      }
+      
+      /* Style Django form errors */
+      .errorlist {
+        @apply text-error text-sm mt-1;
+      }
+    </style>
   </head>
   <!-- Choose theme -->
   <body class="flex flex-col h-full" data-theme="light">
@@ -33,7 +46,16 @@
         <div class="navbar-start text-primary text-2xl font-bold"><a href={% url 'home' %}>Luna</a></div>
       <div class="navbar-end">
         <div class="flex space-x-4">
-            <button class="btn btn-outline btn-primary">Home</button>
+            {% if user.is_authenticated %}
+            <form method="post" action="{% url 'logout' %}" class="inline">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-outline btn-primary">Logout</button>
+            </form>
+            {% else %}
+            <a href="{% url 'login' %}" class="btn btn-outline btn-primary">Login</a>
+            <a href="{% url 'signup' %}" class="btn btn-outline btn-primary">Sign Up</a>
+            {% endif %}
+            <a href="{% url 'home' %}" class="btn btn-outline btn-primary">Home</a>
             <button class="btn btn-outline btn-primary">About Us</button>
         </div>
       </div>

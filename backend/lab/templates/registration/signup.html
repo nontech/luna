@@ -1,0 +1,112 @@
+{% extends "base.html" %} {% block content %}
+<div
+  class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8"
+>
+  <div
+    class="max-w-md w-full space-y-8 card bg-base-100 shadow-xl p-8"
+  >
+    <div>
+      <h2 class="text-center text-3xl font-bold">
+        Create an account
+      </h2>
+    </div>
+
+    <form method="post" class="space-y-6">
+      {% csrf_token %} {% if form.errors %}
+      <div class="alert alert-error shadow-lg">
+        <div>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-6 w-6"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+          <span>Please correct the errors below.</span>
+        </div>
+      </div>
+      {% endif %} {{ form.username }}
+
+      <div class="form-control w-full">
+        <label class="label">
+          <span class="label-text font-medium">Email</span>
+        </label>
+        {{ form.email }} {% if form.email.errors %}
+        <div class="text-error text-sm mt-1">
+          {% for error in form.email.errors %}
+          <div>{{ error }}</div>
+          {% endfor %}
+        </div>
+        {% endif %} {% if form.email.help_text %}
+        <label class="label">
+          <span class="label-text-alt text-gray-600"
+            >{{ form.email.help_text }}</span
+          >
+        </label>
+        {% endif %}
+      </div>
+
+      <div class="form-control w-full">
+        <label class="label">
+          <span class="label-text font-medium">Password</span>
+        </label>
+        {{ form.password1 }} {% if form.password1.errors %}
+        <div class="text-error text-sm mt-1">
+          {% for error in form.password1.errors %}
+          <div>{{ error }}</div>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+
+      <div class="form-control w-full">
+        <label class="label">
+          <span class="label-text font-medium">Confirm Password</span>
+        </label>
+        {{ form.password2 }} {% if form.password2.errors %}
+        <div class="text-error text-sm mt-1">
+          {% for error in form.password2.errors %}
+          <div>{{ error }}</div>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Password Requirements -->
+      <div class="card bg-base-200 p-4">
+        <h3 class="font-medium mb-2">Password Requirements:</h3>
+        <ul class="text-sm space-y-1 text-gray-600">
+          <li>• At least 8 characters long</li>
+          <li>• Cannot be entirely numeric</li>
+          <li>
+            • Cannot be too similar to your other personal information
+          </li>
+          <li>• Cannot be a commonly used password</li>
+        </ul>
+      </div>
+
+      <div>
+        <button type="submit" class="btn btn-primary w-full">
+          Sign Up
+        </button>
+      </div>
+    </form>
+
+    <div class="text-center">
+      <p>
+        Already have an account?
+        <a href="{% url 'login' %}" class="link link-primary"
+          >Log in</a
+        >
+      </p>
+    </div>
+  </div>
+</div>
+{% endblock %}

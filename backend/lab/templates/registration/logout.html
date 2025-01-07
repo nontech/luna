@@ -1,0 +1,24 @@
+{% extends "base.html" %} {% block content %}
+<div
+  class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8"
+>
+  <div
+    class="max-w-md w-full space-y-8 card bg-base-100 shadow-xl p-8"
+  >
+    <div>
+      <h2 class="text-center text-3xl font-bold">Logout</h2>
+      <p class="text-center mt-4">Are you sure you want to logout?</p>
+    </div>
+
+    <form method="post" class="text-center">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-primary">
+        Yes, logout
+      </button>
+      <a href="{% url 'home' %}" class="btn btn-outline ml-2">
+        Cancel
+      </a>
+    </form>
+  </div>
+</div>
+{% endblock %}

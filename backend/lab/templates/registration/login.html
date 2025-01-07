@@ -1,0 +1,74 @@
+{% extends "base.html" %} {% block content %}
+<div
+  class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8"
+>
+  <div
+    class="max-w-md w-full space-y-8 card bg-base-100 shadow-xl p-8"
+  >
+    <div>
+      <h2 class="text-center text-3xl font-bold">
+        Sign in to your account
+      </h2>
+    </div>
+
+    {% if form.errors %}
+    <div class="alert alert-error">
+      <span
+        >Your email and password didn't match. Please try again.</span
+      >
+    </div>
+    {% endif %}
+
+    <form method="post" action="{% url 'login' %}" class="space-y-6">
+      {% csrf_token %}
+      <div class="form-control w-full">
+        <label class="label">
+          <span class="label-text">Email</span>
+        </label>
+        <input
+          type="email"
+          name="username"
+          class="input input-bordered w-full"
+          required
+          autofocus
+        />
+      </div>
+
+      <div class="form-control w-full">
+        <label class="label">
+          <span class="label-text">Password</span>
+        </label>
+        <input
+          type="password"
+          name="password"
+          class="input input-bordered w-full"
+          required
+        />
+      </div>
+
+      <div>
+        <button type="submit" class="btn btn-primary w-full">
+          Sign in
+        </button>
+      </div>
+
+      <input type="hidden" name="next" value="{{ next }}" />
+    </form>
+
+    <div class="text-center">
+      <a href="{% url 'password_reset' %}" class="link link-primary">
+        Forgot your password?
+      </a>
+    </div>
+
+    <div class="text-center mt-4">
+      <p>
+        Don't have an account?
+        <a href="{% url 'signup' %}" class="link link-primary"
+          >Sign up</a
+        >
+      </p>
+    </div>
+  </div>
+</div>
+{% endblock %}

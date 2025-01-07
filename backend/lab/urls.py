@@ -6,7 +6,8 @@ from .views import (
     update_classroom, delete_classroom_by_slug, 
     get_classrooms_list, create_new_exercise,
     update_exercise_by_id, delete_exercise_by_id,
-    get_exercise_list, get_exercise_details
+    get_exercise_list, get_exercise_details,
+    signup
 )
 
 # Initialize the router
@@ -32,4 +33,5 @@ urlpatterns = [
     path('classroom/<slug:classroom_slug>/exercises/', get_exercise_list, name='get_exercise_list'),
     path('codemirror-test/', codemirror_test, name='codemirror_test'),
     path('api/', include(router.urls)),
+    path('signup/', signup, name='signup'),
 ]

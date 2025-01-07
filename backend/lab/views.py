@@ -1,4 +1,4 @@
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, render, redirect
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.urls import reverse
 from django.views import generic
@@ -12,6 +12,10 @@ from rest_framework import viewsets
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from .serializers import ClassroomSerializer
+from django.contrib.auth import login
+from django.contrib.auth.forms import UserCreationForm
+from django import forms
+from django.views.decorators.cache import never_cache
 
 # Create your views here.
 
@@ -452,3 +456,46 @@ def get_exercise_details(request, exercise_id):
         return JsonResponse({
             'error': str(e)
         }, status=500)
+
+class EmailSignUpForm(UserCreationForm):
+    email = forms.EmailField(required=True)
+    # Hide username as we'll generate it automatically
+    username = forms.CharField(required=True, widget=forms.HiddenInput())
+
+    class Meta(UserCreationForm.Meta):
+        fields = ('email', 'password1', 'password2')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Remove username help_text since it's hidden
+        self.fields['username'].help_text = None
+        # Add better email help text
+        self.fields['email'].help_text = "We'll use this for your login"
+
+    def clean_email(self):
+        email = self.cleaned_data['email']
+        # Generate username from email (part before @)
+        username = email.split('@')[0]
+        # Ensure username is unique by adding numbers if needed
+        base_username = username
+        counter = 1
+        while self._meta.model.objects.filter(username=username).exists():
+            username = f"{base_username}{counter}"
+            counter += 1
+        # Store the generated username
+        self.cleaned_data['username'] = username
+        return email
+
+@never_cache
+def signup(request):
+    if request.method == 'POST':
+        form = EmailSignUpForm(request.POST)
+        if form.is_valid():
+            # Username is already set in clean_email
+            user = form.save()
+            login(request, user)
+            return redirect('home')
+    else:
+        # Pre-fill username with a placeholder
+        form = EmailSignUpForm(initial={'username': 'temp'})
+    return render(request, 'registration/signup.html', {'form': form})
