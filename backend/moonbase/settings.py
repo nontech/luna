@@ -200,3 +200,9 @@ AUTHENTICATION_BACKENDS = [
     'lab.backends.EmailBackend',
     'django.contrib.auth.backends.ModelBackend',  # Keep the default backend as fallback
 ]
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+RESEND_SMTP_PORT = 587
+RESEND_SMTP_USERNAME = 'resend'
+RESEND_SMTP_HOST = 'smtp.resend.com'
+RESEND_SMTP_PASSWORD = env('RESEND_API_KEY')

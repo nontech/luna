@@ -7,7 +7,7 @@ from .views import (
     get_classrooms_list, create_new_exercise,
     update_exercise_by_id, delete_exercise_by_id,
     get_exercise_list, get_exercise_details,
-    signup
+    signup, test_email
 )
 
 # Initialize the router
@@ -34,4 +34,5 @@ urlpatterns = [
     path('codemirror-test/', codemirror_test, name='codemirror_test'),
     path('api/', include(router.urls)),
     path('signup/', signup, name='signup'),
+    path('email-test/', test_email, name='test_email'),
 ]

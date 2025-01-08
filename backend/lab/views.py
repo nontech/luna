@@ -1,21 +1,41 @@
+# Imports
+import json
+import os
+
+# Django
 from django.shortcuts import get_object_or_404, render, redirect
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.urls import reverse
+
+# Settings
+from django.conf import settings
+
+# Views
 from django.views import generic
-from django.shortcuts import render
 from django.views.generic import DetailView
-from django.utils.safestring import mark_safe
-from .models import Classrooms, Users, Exercises, ClassroomExercises, ExerciseTests
 from django.views.decorators.csrf import csrf_exempt
-import json
+
+# Safestring
+from django.utils.safestring import mark_safe
+
+# REST
 from rest_framework import viewsets
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from .serializers import ClassroomSerializer
+
+# Models
+from .models import Classrooms, Users, Exercises, ClassroomExercises, ExerciseTests
+
+# Auth
 from django.contrib.auth import login
 from django.contrib.auth.forms import UserCreationForm
 from django import forms
 from django.views.decorators.cache import never_cache
+
+# Email
+from django.core.mail import EmailMessage, get_connection
+from smtplib import SMTPAuthenticationError
 
 # Create your views here.
 
@@ -499,3 +519,50 @@ def signup(request):
         # Pre-fill username with a placeholder
         form = EmailSignUpForm(initial={'username': 'temp'})
     return render(request, 'registration/signup.html', {'form': form})
+
+# Sample Django view
+def test_email(request):
+    try:
+        # Debug: Print settings (but mask the actual key)
+        api_key = settings.RESEND_SMTP_PASSWORD
+        debug_info = {
+            "host": settings.RESEND_SMTP_HOST,
+            "port": settings.RESEND_SMTP_PORT,
+            "username": settings.RESEND_SMTP_USERNAME,
+            "api_key_length": len(api_key) if api_key else 0,
+            "api_key_starts_with": api_key[:6] + "..." if api_key else None
+        }
+        print("Debug settings:", debug_info)  # This will show in your console
+
+        subject = "Hello from Django SMTP"
+        recipient_list = ["delivered@resend.dev"]
+        from_email = "onboarding@resend.dev"
+        message = "<strong>it works!</strong>"
+
+        with get_connection(
+            host=settings.RESEND_SMTP_HOST,
+            port=settings.RESEND_SMTP_PORT,
+            username=settings.RESEND_SMTP_USERNAME,
+            password=settings.RESEND_SMTP_PASSWORD,
+            use_tls=True,
+            ) as connection:
+                r = EmailMessage(
+                      subject=subject,
+                      body=message,
+                      to=recipient_list,
+                      from_email=from_email,
+                      connection=connection).send()
+        return JsonResponse({"status": "ok"})
+    except SMTPAuthenticationError as e:
+        return JsonResponse({
+            "status": "error",
+            "message": "SMTP Authentication failed. Please check your API key.",
+            "details": str(e),
+            "debug_info": debug_info
+        }, status=401)
+    except Exception as e:
+        return JsonResponse({
+            "status": "error",
+            "message": str(e),
+            "debug_info": debug_info
+        }, status=500)
