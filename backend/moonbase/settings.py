@@ -198,7 +198,7 @@ LOGOUT_REDIRECT_URL = 'home'
 
 AUTHENTICATION_BACKENDS = [
     'lab.backends.EmailBackend',
-    'django.contrib.auth.backends.ModelBackend',  # Keep the default backend as fallback
+    'django.contrib.auth.backends.ModelBackend',
 ]
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'

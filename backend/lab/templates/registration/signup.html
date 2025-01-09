@@ -79,6 +79,27 @@
         {% endif %}
       </div>
 
+      <div class="form-control w-full mb-12">
+        <label class="label">
+          <span class="label-text font-medium">I am a</span>
+        </label>
+        <div class="flex gap-6">
+          {% for radio in form.role %}
+          <label class="flex items-center">
+            {{ radio.tag }}
+            <span class="ml-2">{{ radio.choice_label }}</span>
+          </label>
+          {% endfor %}
+        </div>
+        {% if form.role.errors %}
+        <div class="text-error text-sm mt-1">
+          {% for error in form.role.errors %}
+          <div>{{ error }}</div>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+
       <!-- Password Requirements -->
       <div class="card bg-base-200 p-4">
         <h3 class="font-medium mb-2">Password Requirements:</h3>

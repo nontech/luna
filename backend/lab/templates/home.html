@@ -3,7 +3,8 @@
 <!-- Hero Section -->
 <h1 class="text-4xl font-bold text-center mt-10">Welcome to Luna</h1>
 
-<!-- Button -->
-<div class="mt-8 text-center">This is home page from Django!</div>
-
-{% endblock %}
+{% if user.is_authenticated %}
+<p>Welcome {{ user.username }}</p>
+{% else %}
+<p>Please login or signup to see this page.</p>
+{% endif %} {% endblock %}

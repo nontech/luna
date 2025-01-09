@@ -28,14 +28,19 @@ from .serializers import ClassroomSerializer
 from .models import Classrooms, Users, Exercises, ClassroomExercises, ExerciseTests
 
 # Auth
-from django.contrib.auth import login
+from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import UserCreationForm
 from django import forms
 from django.views.decorators.cache import never_cache
+from django.contrib.auth.decorators import permission_required, login_required
+from django.contrib.auth.backends import ModelBackend
 
 # Email
 from django.core.mail import EmailMessage, get_connection
 from smtplib import SMTPAuthenticationError
+
+# Forms
+from .forms import EmailSignUpForm
 
 # Create your views here.
 
@@ -58,8 +63,9 @@ result  # This will be returned as the output
 def home(request):
     return render(request, 'home.html')
 
-
-@api_view(['GET'])
+@csrf_exempt
+@login_required
+@permission_required('lab.view_classrooms', raise_exception=True)
 def get_classrooms_list(request):
     """
     List all classrooms.
@@ -132,7 +138,9 @@ def get_exercise_list(request, classroom_slug):
    
 # CRUD Classroom
 
-@csrf_exempt  # Only for development! Use proper CSRF protection in production
+@csrf_exempt
+@login_required
+@permission_required('lab.add_classrooms', raise_exception=True)
 def create_new_classroom(request):
     if request.method != 'POST':
         return JsonResponse({
@@ -201,6 +209,8 @@ def get_classroom_details(request, slug):
         }, status=500)
  
 @csrf_exempt
+@login_required
+@permission_required('lab.change_classrooms', raise_exception=True)
 def update_classroom(request, slug):
     if request.method != 'PUT':
         return JsonResponse({
@@ -477,47 +487,25 @@ def get_exercise_details(request, exercise_id):
             'error': str(e)
         }, status=500)
 
-class EmailSignUpForm(UserCreationForm):
-    email = forms.EmailField(required=True)
-    # Hide username as we'll generate it automatically
-    username = forms.CharField(required=True, widget=forms.HiddenInput())
-
-    class Meta(UserCreationForm.Meta):
-        fields = ('email', 'password1', 'password2')
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # Remove username help_text since it's hidden
-        self.fields['username'].help_text = None
-        # Add better email help text
-        self.fields['email'].help_text = "We'll use this for your login"
-
-    def clean_email(self):
-        email = self.cleaned_data['email']
-        # Generate username from email (part before @)
-        username = email.split('@')[0]
-        # Ensure username is unique by adding numbers if needed
-        base_username = username
-        counter = 1
-        while self._meta.model.objects.filter(username=username).exists():
-            username = f"{base_username}{counter}"
-            counter += 1
-        # Store the generated username
-        self.cleaned_data['username'] = username
-        return email
-
 @never_cache
 def signup(request):
     if request.method == 'POST':
         form = EmailSignUpForm(request.POST)
         if form.is_valid():
-            # Username is already set in clean_email
             user = form.save()
-            login(request, user)
+            # Authenticate and login the user with the ModelBackend
+            authenticated_user = authenticate(
+                request, 
+                username=user.username,
+                password=form.cleaned_data['password1']
+            )
+            if authenticated_user:
+                login(request, authenticated_user, backend='django.contrib.auth.backends.ModelBackend')
             return redirect('home')
+        else:
+            print("Form errors:", form.errors)
     else:
-        # Pre-fill username with a placeholder
-        form = EmailSignUpForm(initial={'username': 'temp'})
+        form = EmailSignUpForm()
     return render(request, 'registration/signup.html', {'form': form})
 
 # Sample Django view
