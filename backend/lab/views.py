@@ -20,7 +20,8 @@ from django.utils.safestring import mark_safe
 
 # REST
 from rest_framework import viewsets
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from .serializers import ClassroomSerializer
 
@@ -34,6 +35,7 @@ from django import forms
 from django.views.decorators.cache import never_cache
 from django.contrib.auth.decorators import permission_required, login_required
 from django.contrib.auth.backends import ModelBackend
+from django.contrib.auth.models import User
 
 # Email
 from django.core.mail import EmailMessage, get_connection
@@ -501,7 +503,8 @@ def signup(request):
             )
             if authenticated_user:
                 login(request, authenticated_user, backend='django.contrib.auth.backends.ModelBackend')
-            return redirect('home')
+            # Redirect to frontend after successful signup and login
+                return HttpResponseRedirect('http://localhost:3000')
         else:
             print("Form errors:", form.errors)
     else:
@@ -554,3 +557,18 @@ def test_email(request):
             "message": str(e),
             "debug_info": debug_info
         }, status=500)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_user_details(request):
+    # request.user will be an instance of auth.User
+    user = request.user
+    return Response({
+        'email': user.email,
+        'id': user.id,
+        'username': user.username,
+        'first_name': user.first_name,
+        'last_name': user.last_name,
+        'is_staff': user.is_staff,
+        'date_joined': user.date_joined
+    })
