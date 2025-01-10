@@ -3,8 +3,27 @@
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import clsx from "clsx";
+
 export default function Navbar() {
   const pathname = usePathname();
+
+  const handleSendEmail = async () => {
+    try {
+      const response = await fetch("/api/send", {
+        method: "POST",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to send email");
+      }
+
+      alert("Email sent successfully!");
+    } catch (error) {
+      console.error("Error sending email:", error);
+      alert("Failed to send email");
+    }
+  };
+
   return (
     <div className="navbar bg-[#8c52ff]">
       {/* Left side of navbar */}
@@ -22,12 +41,21 @@ export default function Navbar() {
       <div className="flex-none">
         <Link
           href="/classrooms"
-          className={clsx("text-white hover:text-gray-200", {
+          className={clsx("text-white hover:text-gray-200 mr-4", {
             "text-gray-200": pathname === "/classrooms",
           })}
         >
           Classrooms
         </Link>
+
+        {/* Email Button */}
+        <button
+          onClick={handleSendEmail}
+          className="btn btn-ghost text-white hover:text-gray-200 mr-4"
+        >
+          Send Email
+        </button>
+
         {/* Notifications */}
         <button className="btn btn-ghost btn-circle">
           <div className="indicator">
