@@ -20,16 +20,23 @@ from django.utils.safestring import mark_safe
 
 # REST
 from rest_framework import viewsets
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import (
+    api_view, 
+    permission_classes,
+    authentication_classes
+)
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from .serializers import ClassroomSerializer
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.authentication import SessionAuthentication
+from rest_framework_simplejwt.authentication import JWTAuthentication
 
 # Models
 from .models import Classrooms, Users, Exercises, ClassroomExercises, ExerciseTests
 
 # Auth
-from django.contrib.auth import login, authenticate
+from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.forms import UserCreationForm
 from django import forms
 from django.views.decorators.cache import never_cache
@@ -43,6 +50,23 @@ from smtplib import SMTPAuthenticationError
 
 # Forms
 from .forms import EmailSignUpForm
+
+# Examples of views
+
+# This is a DRF view - requires authentication by default
+@api_view(['GET'])
+def get_user_details(request):  # Will require authentication
+    ...
+
+# This is a regular Django view - NOT affected by DRF permissions
+def signup(request):  # Does NOT require authentication
+    ...
+
+# You can override the default permission for specific views
+@api_view(['GET'])
+@permission_classes([AllowAny])  # Override to allow unauthenticated access
+def public_api_view(request):
+    ...
 
 # Create your views here.
 
@@ -495,7 +519,6 @@ def signup(request):
         form = EmailSignUpForm(request.POST)
         if form.is_valid():
             user = form.save()
-            # Authenticate and login the user with the ModelBackend
             authenticated_user = authenticate(
                 request, 
                 username=user.username,
@@ -503,8 +526,42 @@ def signup(request):
             )
             if authenticated_user:
                 login(request, authenticated_user, backend='django.contrib.auth.backends.ModelBackend')
-            # Redirect to frontend after successful signup and login
-                return HttpResponseRedirect('http://localhost:3000')
+                
+                # Generate JWT tokens
+                refresh = RefreshToken.for_user(authenticated_user)
+                
+                # Debug print
+                print(f"Generated tokens for user {authenticated_user.username}")
+                print(f"Access token: {str(refresh.access_token)[:20]}...")
+                
+                response = HttpResponseRedirect('http://localhost:3000')
+                
+                # Set cookies with debug logging
+                cookie_settings = {
+                    'httponly': True,
+                    'secure': settings.SIMPLE_JWT['AUTH_COOKIE_SECURE'],
+                    'samesite': 'Lax',
+                    'path': '/',
+                }
+                print("Cookie settings:", cookie_settings)
+                
+                response.set_cookie(
+                    'access_token',
+                    str(refresh.access_token),
+                    max_age=3600,
+                    **cookie_settings
+                )
+                response.set_cookie(
+                    'refresh_token',
+                    str(refresh),
+                    max_age=86400,
+                    **cookie_settings
+                )
+                
+                # Debug print final response
+                print("Final response cookies:", response.cookies.items())
+                
+                return response
         else:
             print("Form errors:", form.errors)
     else:
@@ -558,10 +615,16 @@ def test_email(request):
             "debug_info": debug_info
         }, status=500)
 
+from .authentication import CookieJWTAuthentication
+
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated]) # This is optional since it's the default
+@authentication_classes([CookieJWTAuthentication])
 def get_user_details(request):
-    # request.user will be an instance of auth.User
+    # Debug: Print request headers and cookies
+    print("Request headers:", request.headers)
+    print("Cookies:", request.COOKIES)
+    
     user = request.user
     return Response({
         'email': user.email,
@@ -572,3 +635,67 @@ def get_user_details(request):
         'is_staff': user.is_staff,
         'date_joined': user.date_joined
     })
+
+
+@never_cache
+def login_view(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        user = authenticate(request, username=username, password=password)
+        
+        if user is not None:
+            # Session Authentication
+            login(request, user)
+
+            # Generate JWT tokens
+            refresh = RefreshToken.for_user(user)
+            
+            response = HttpResponseRedirect('http://localhost:3000')
+            # Set JWT tokens as HTTP-only cookies
+            response.set_cookie(
+                'access_token',
+                str(refresh.access_token),
+                httponly=True,
+                secure=settings.SIMPLE_JWT['AUTH_COOKIE_SECURE'],  # Use setting value instead of True
+                samesite='Lax',
+                path='/',
+                max_age=3600  # 1 hour
+            )
+            response.set_cookie(
+                'refresh_token',
+                str(refresh),
+                httponly=True,
+                secure=settings.SIMPLE_JWT['AUTH_COOKIE_SECURE'],  # Use setting value instead of True
+                samesite='Lax',
+                path='/',
+                max_age=86400  # 24 hours
+            )
+            return response
+            
+    return render(request, 'registration/login.html')
+
+@never_cache
+@csrf_exempt
+def logout_view(request):
+    if request.method == 'POST':
+        # Clear Session Authentication
+        logout(request)
+
+        response = HttpResponseRedirect('http://localhost:3000')
+        
+        # Clear JWT tokens
+        # Only path and samesite are valid parameters for delete_cookie
+        response.delete_cookie(
+            'access_token',
+            path='/',
+            samesite='Lax'
+        )
+        response.delete_cookie(
+            'refresh_token',
+            path='/',
+            samesite='Lax'
+        )
+        return response
+        
+    return render(request, 'registration/logout.html')

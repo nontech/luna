@@ -1,6 +1,7 @@
 "use client";
 import "./globals.css";
 import Providers from "./components/Providers";
+import Navbar from "./ui/Navbar";
 
 export default function RootLayout({
   children,

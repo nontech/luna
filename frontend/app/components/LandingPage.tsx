@@ -23,7 +23,7 @@ export default function LandingPage() {
                     Get started
                   </a>
                   <a
-                    href="http://localhost:8000/accounts/signup/"
+                    href="http://localhost:8000/signup/"
                     className="text-sm font-semibold leading-6 text-gray-900"
                   >
                     Sign up <span aria-hidden="true">→</span>

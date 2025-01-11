@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 from pathlib import Path
 import environ
 import os
+from datetime import timedelta
 
 # Initialize environ
 env = environ.Env(
@@ -84,6 +85,10 @@ REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
     ),
 }
 
@@ -96,21 +101,41 @@ SPECTACULAR_SETTINGS = {
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
 ]
 
 # Configure CORS to allow credentials
-CORS_ALLOW_ALL_ORIGINS = True  # Only for development!
-# For production, specify allowed origins:
+CORS_ALLOW_CREDENTIALS = True  # Important for cookies
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",# Your Next.js frontend
-    # "http://127.0.0.1:3000",
+    "http://localhost:3000",
 ]
+
+# Add this setting to determine if we're in development
+IS_DEVELOPMENT = ENV_TYPE == 'local'
+
+# JWT settings
+SIMPLE_JWT = {
+    # Cookie settings
+    'AUTH_COOKIE': 'access_token',
+    'AUTH_COOKIE_REFRESH': 'refresh_token',
+    'AUTH_COOKIE_SECURE': not IS_DEVELOPMENT,
+    'AUTH_COOKIE_HTTP_ONLY': True,
+    'AUTH_COOKIE_SAMESITE': 'Lax',
+    'AUTH_COOKIE_PATH': '/',
+
+    # Token lifetime
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+
+    # User identification
+    'USER_ID_FIELD': 'id',
+    'USER_ID_CLAIM': 'user_id',
+}
 
 LOGIN_REDIRECT_URL = 'http://localhost:3000'
 LOGOUT_REDIRECT_URL = 'http://localhost:3000'
@@ -210,3 +235,15 @@ RESEND_SMTP_PORT = 587
 RESEND_SMTP_USERNAME = 'resend'
 RESEND_SMTP_HOST = 'smtp.resend.com'
 RESEND_SMTP_PASSWORD = env('RESEND_API_KEY')
+
+# CSRF settings
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:3000",
+]
+CSRF_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_HTTPONLY = True
+CSRF_COOKIE_SECURE = not IS_DEVELOPMENT
+CSRF_USE_SESSIONS = True
+
+# Update Session settings
+SESSION_COOKIE_SECURE = not IS_DEVELOPMENT

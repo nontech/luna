@@ -17,14 +17,27 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
+from lab.views import login_view, logout_view
 
 urlpatterns = [
+    # Admin
     path('admin/', admin.site.urls),
+
     # Auth URLs should come before your app URLs
+    
+    # Only override login/logout to handle JWT
+    path('login/', login_view, name='login'),
+    path('logout/', logout_view, name='logout'),
+
+    # Keep all other auth URLs (password reset, change, etc.) as is
     path("accounts/", include("django.contrib.auth.urls")),
+
+    # Lab
     path('', include('lab.urls')),
+
     # API Documentation
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     path('api/schema/swagger-ui/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
     path('api/schema/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
+    
 ]

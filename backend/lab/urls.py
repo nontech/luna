@@ -23,6 +23,12 @@ urlpatterns = [
     path('classroom/<slug:slug>/', get_classroom_details, name='get_classroom_details'),
     path('update_classroom/<slug:slug>/', update_classroom, name='update_classroom'),
     path('delete_classroom/<slug:slug>/', delete_classroom_by_slug, name='delete_classroom_by_slug'),
+
+    # Classroom List
+    path('classrooms', get_classrooms_list, name='get_classrooms_list'),
+
+    # Exercise List
+    path('classroom/<slug:classroom_slug>/exercises/', get_exercise_list, name='get_exercise_list'),
     
     # CRUD Exercise
     path('classroom/<slug:classroom_slug>/create_new_exercise/', create_new_exercise, name='create_new_exercise'),
@@ -30,12 +36,16 @@ urlpatterns = [
     path('exercise/update/<uuid:exercise_id>/', update_exercise_by_id, name='update_exercise_by_id'),
     path('exercise/delete/<uuid:exercise_id>/', delete_exercise_by_id, name='delete_exercise_by_id'),
 
-    # Other paths
-    path('classrooms', get_classrooms_list, name='get_classrooms_list'),
-    path('classroom/<slug:classroom_slug>/exercises/', get_exercise_list, name='get_exercise_list'),
+    # Codemirror Test
     path('codemirror-test/', codemirror_test, name='codemirror_test'),
+
+    # API
     path('api/', include(router.urls)),
+
+    # Signup
     path('signup/', signup, name='signup'),
+
+    # Test Email
     path('email-test/', test_email, name='test_email'),
 
     # Authentication endpoints
