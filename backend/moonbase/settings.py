@@ -84,7 +84,7 @@ INSTALLED_APPS = [
 REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'lab.authentication.CookieJWTAuthentication',
         'rest_framework.authentication.SessionAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
@@ -99,6 +99,7 @@ SPECTACULAR_SETTINGS = {
 } 
 
 MIDDLEWARE = [
+    # 'lab.middleware.RequestLoggingMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
@@ -114,6 +115,28 @@ CORS_ALLOW_CREDENTIALS = True  # Important for cookies
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
 ]
+CORS_EXPOSE_HEADERS = ['Content-Type', 'X-CSRFToken']
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
+
+# Add these settings if not already present
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
 
 # Add this setting to determine if we're in development
 IS_DEVELOPMENT = ENV_TYPE == 'local'
@@ -123,11 +146,11 @@ SIMPLE_JWT = {
     # Cookie settings
     'AUTH_COOKIE': 'access_token',
     'AUTH_COOKIE_REFRESH': 'refresh_token',
-    'AUTH_COOKIE_SECURE': not IS_DEVELOPMENT,
+    'AUTH_COOKIE_SECURE': False,
     'AUTH_COOKIE_HTTP_ONLY': True,
     'AUTH_COOKIE_SAMESITE': 'Lax',
     'AUTH_COOKIE_PATH': '/',
-
+    
     # Token lifetime
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
@@ -158,7 +181,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'moonbase.wsgi.application'
+# WSGI_APPLICATION = 'moonbase.wsgi.application'
 
 
 # Database
@@ -247,3 +270,20 @@ CSRF_USE_SESSIONS = True
 
 # Update Session settings
 SESSION_COOKIE_SECURE = not IS_DEVELOPMENT
+
+# Add these logging settings
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'lab.authentication': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+        }
+    },
+}

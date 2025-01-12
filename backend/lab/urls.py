@@ -8,9 +8,12 @@ from .views import (
     update_exercise_by_id, delete_exercise_by_id,
     get_exercise_list, get_exercise_details,
     signup, test_email,
-    get_user_details
+    get_user_details,
+    login_view,
+    logout_view,
 )
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from django.contrib.auth import views as auth_views
 
 # Initialize the router
 router = DefaultRouter()
@@ -52,4 +55,13 @@ urlpatterns = [
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/user/', get_user_details, name='user_details'),
+
+    # Auth URLs - put these first
+    path('accounts/login/', login_view, name='login'),
+    path('accounts/logout/', logout_view, name='logout'),
+    
+    # Include other auth URLs for password reset, etc.
+    path('accounts/', include('django.contrib.auth.urls')),
+
+    # path('api/test-cookies/', test_cookies, name='test_cookies'),
 ]

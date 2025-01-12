@@ -645,33 +645,33 @@ def login_view(request):
         user = authenticate(request, username=username, password=password)
         
         if user is not None:
-            # Session Authentication
             login(request, user)
-
-            # Generate JWT tokens
+            
+            # Generate JWT token
             refresh = RefreshToken.for_user(user)
             
-            response = HttpResponseRedirect('http://localhost:3000')
-            # Set JWT tokens as HTTP-only cookies
+            response = JsonResponse({
+                'success': True,
+                'redirect_url': 'http://localhost:3000'
+            })
+            
+            # Set JWT token in HTTP-only cookie
             response.set_cookie(
                 'access_token',
                 str(refresh.access_token),
                 httponly=True,
-                secure=settings.SIMPLE_JWT['AUTH_COOKIE_SECURE'],  # Use setting value instead of True
+                secure=settings.SIMPLE_JWT['AUTH_COOKIE_SECURE'],
                 samesite='Lax',
                 path='/',
                 max_age=3600  # 1 hour
             )
-            response.set_cookie(
-                'refresh_token',
-                str(refresh),
-                httponly=True,
-                secure=settings.SIMPLE_JWT['AUTH_COOKIE_SECURE'],  # Use setting value instead of True
-                samesite='Lax',
-                path='/',
-                max_age=86400  # 24 hours
-            )
+            
             return response
+        else:
+            return JsonResponse({
+                'success': False,
+                'error': 'Invalid credentials'
+            }, status=401)
             
     return render(request, 'registration/login.html')
 

@@ -38,28 +38,18 @@ export function AuthProvider({
 
   const checkAuth = useCallback(async (): Promise<boolean> => {
     try {
-      console.log("Checking authentication...");
       const response = await fetch(
         "http://localhost:8000/api/user/",
         {
           credentials: "include",
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-          },
         }
       );
 
-      console.log("Auth check response status:", response.status);
-
       if (response.ok) {
         const userData = await response.json();
-        console.log("User data received:", userData);
         setUser(userData);
         return true;
       } else {
-        const errorData = await response.text();
-        console.log("Auth check failed:", errorData);
         setUser(null);
         return false;
       }
@@ -96,23 +86,32 @@ export function AuthProvider({
     password: string
   ): Promise<void> => {
     try {
-      const response = await fetch("http://localhost:8000/login/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-        body: new URLSearchParams({
-          username: email,
-          password,
-        }),
-        credentials: "include",
-      });
+      const formData = new URLSearchParams();
+      formData.append("username", email);
+      formData.append("password", password);
+
+      const response = await fetch(
+        "http://localhost:8000/accounts/login/",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+          body: formData,
+          credentials: "include",
+        }
+      );
+
+      const data = await response.json();
 
       if (!response.ok) {
-        throw new Error("Login failed");
+        throw new Error(data.error || "Login failed");
       }
 
-      await checkAuth();
+      if (data.success) {
+        await checkAuth();
+        window.location.href = data.redirect_url;
+      }
     } catch (error) {
       console.error("Login error:", error);
       throw error;
