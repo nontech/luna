@@ -46,7 +46,7 @@ export default function Navbar() {
         {user ? (
           <>
             <div className="text-white text-sm">
-              Welcome, {user.username}!
+              Welcome, {user.username}!, You are a {user.user_role}
             </div>
             <button
               onClick={handleLogout}

@@ -14,6 +14,7 @@ interface User {
   last_name: string;
   is_staff: boolean;
   date_joined: string;
+  user_role: "teacher" | "student" | null;
 }
 
 interface AuthContextType {

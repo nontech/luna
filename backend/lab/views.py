@@ -633,7 +633,8 @@ def get_user_details(request):
         'first_name': user.first_name,
         'last_name': user.last_name,
         'is_staff': user.is_staff,
-        'date_joined': user.date_joined
+        'date_joined': user.date_joined,
+        'user_role': get_user_role(user)
     })
 
 
@@ -699,3 +700,16 @@ def logout_view(request):
         return response
         
     return render(request, 'registration/logout.html')
+
+def get_user_role(user):
+    """
+    Returns user role based on group membership.
+    Returns 'teacher' if user is in Teachers group
+    Returns 'student' if user is in Students group
+    Returns None if user has no role
+    """
+    if user.groups.filter(name='Teachers').exists():
+        return 'teacher'
+    elif user.groups.filter(name='Students').exists():
+        return 'student'
+    return None
