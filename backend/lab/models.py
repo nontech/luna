@@ -1,28 +1,10 @@
 from django.db import models
 from django.utils.text import slugify
 import uuid 
+from django.contrib.auth.models import User
 
 # Create your models here.
 from django.db import models
-
-class Users(models.Model):
-    full_name = models.CharField(max_length=50)
-    username = models.CharField(max_length=50)
-    email = models.EmailField()
-    password = models.CharField(max_length=50)
-
-    # timestamps
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        db_table = 'users'  # This overrides the default 'lab_users' table name in the database
-        verbose_name = 'User' # This overrides the default singular name 'Users' for the model in Admin panel
-        verbose_name_plural = 'Users' # This overrides the default plural name 'Userss' for the model in Admin panel
-
-    def __str__(self):
-        return self.full_name
-    
 
 class Classrooms(models.Model):
     name = models.CharField(max_length=50, unique=True)
@@ -33,7 +15,7 @@ class Classrooms(models.Model):
         blank=True
     )
     description = models.TextField()
-    creator_user = models.ForeignKey(Users, on_delete=models.CASCADE)
+    creator_user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     # timestamps
     created_at = models.DateTimeField(auto_now_add=True)
@@ -55,7 +37,7 @@ class Classrooms(models.Model):
 
 class ClassroomUsers(models.Model):
     classroom = models.ForeignKey(Classrooms, on_delete=models.CASCADE)
-    user = models.ForeignKey(Users, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     # timestamps
     created_at = models.DateTimeField(auto_now_add=True)
@@ -74,7 +56,7 @@ class Exercises(models.Model):
     )
     name = models.CharField(max_length=50)
     slug = models.SlugField(max_length=100, blank=True)
-    creator_user = models.ForeignKey(Users, on_delete=models.CASCADE)
+    creator_user = models.ForeignKey(User, on_delete=models.CASCADE)
     instructions = models.TextField()
     code = models.TextField()
 
@@ -129,7 +111,7 @@ class ClassroomExercises(models.Model):
 
 
 class UserExercises(models.Model):
-    user = models.ForeignKey(Users, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     exercise = models.ForeignKey(Exercises, on_delete=models.CASCADE)
     status = models.CharField(max_length=50)
     feedback = models.TextField()

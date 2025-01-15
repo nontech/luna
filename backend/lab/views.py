@@ -33,7 +33,8 @@ from rest_framework.authentication import SessionAuthentication
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 # Models
-from .models import Classrooms, Users, Exercises, ClassroomExercises, ExerciseTests
+from .models import Classrooms, Exercises, ClassroomExercises, ExerciseTests
+from django.contrib.auth.models import User
 
 # Auth
 from django.contrib.auth import login, logout, authenticate
@@ -42,7 +43,6 @@ from django import forms
 from django.views.decorators.cache import never_cache
 from django.contrib.auth.decorators import permission_required, login_required
 from django.contrib.auth.backends import ModelBackend
-from django.contrib.auth.models import User
 
 # Email
 from django.core.mail import EmailMessage, get_connection
@@ -187,7 +187,7 @@ def create_new_classroom(request):
         classroom = Classrooms(
             name=data['name'],
             description=data.get('description', ''),
-            creator_user=Users.objects.get(username='jais')  # Temporary: Replace with actual authenticated user
+            creator_user=request.user  # Use the authenticated user
         )
         
         classroom.save()
@@ -340,7 +340,7 @@ def create_new_exercise(request, classroom_slug):
                 name=data['name'],
                 instructions=data.get('instructions', ''),
                 code=data.get('code', ''),
-                creator_user=Users.objects.get(username='jais')
+                creator_user=request.user  # Use the authenticated user
             )
             exercise.save()
             print(f"Created exercise: {exercise.name} (id: {exercise.id})")
