@@ -1,33 +1,16 @@
-"use client";
-
 import React from "react";
 import Navbar from "@/app/ui/Navbar";
-import { useAuth } from "@/contexts/AuthContext";
+import type { Metadata } from "next";
 
-function ClassroomLayoutClient({
-  teacher,
-  student,
-}: {
-  teacher: React.ReactNode;
-  student: React.ReactNode;
-}) {
-  const { user, isLoading } = useAuth();
+export const metadata: Metadata = {
+  title: "Classrooms",
+  description: "Luna Learning Platform Classrooms",
+};
 
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
+// Split into client component file
+import ClientLayout from "./@teacher/components/ClientLayout";
 
-  return (
-    <div className="pl-20 pt-10">
-      {user?.user_role === "teacher" && teacher}
-      {user?.user_role === "student" && student}
-      {!user?.user_role && (
-        <div>Unauthorized - You are at /classrooms/layout.tsx</div>
-      )}
-    </div>
-  );
-}
-
+// Server Component
 export default function ClassroomLayout({
   teacher,
   student,
@@ -38,7 +21,7 @@ export default function ClassroomLayout({
   return (
     <div>
       <Navbar />
-      <ClassroomLayoutClient teacher={teacher} student={student} />
+      <ClientLayout teacher={teacher} student={student} />
     </div>
   );
 }

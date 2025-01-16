@@ -112,7 +112,7 @@ def get_classrooms_list(request):
             'id': classroom.id,
             'name': classroom.name,
             'description': classroom.description,
-            'teacher': classroom.creator_user.full_name,
+            'teacher': classroom.creator_user.username,
             'createdAt': classroom.created_at.isoformat(),
             'updatedAt': classroom.updated_at.isoformat(),
             'slug': classroom.slug,
@@ -165,17 +165,12 @@ def get_exercise_list(request, classroom_slug):
 # CRUD Classroom
 
 @csrf_exempt
-@login_required
-@permission_required('lab.add_classrooms', raise_exception=True)
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def create_new_classroom(request):
-    if request.method != 'POST':
-        return JsonResponse({
-            'error': 'Only POST method is allowed'
-        }, status=405)
-        
     try:
         # Parse the JSON data from request body
-        data = json.loads(request.body)
+        data = request.data
         
         # Validate required fields
         if 'name' not in data:
@@ -201,10 +196,6 @@ def create_new_classroom(request):
             'created_at': classroom.created_at.isoformat()
         }, status=201)
         
-    except json.JSONDecodeError:
-        return JsonResponse({
-            'error': 'Invalid JSON data'
-        }, status=400)
     except Exception as e:
         return JsonResponse({
             'error': str(e)
