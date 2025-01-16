@@ -27,7 +27,8 @@ export default function Home() {
     <div>
       <Navbar />
       <div className="pl-20 pt-10">
-        <ClassroomListCard />
+        <h1>Home Page</h1>
+        {/* <ClassroomListCard /> */}
       </div>
     </div>
   );

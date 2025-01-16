@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { fetchFromDjango } from "@/utils/api";
 
 // Define the interface for classroom data
 interface Classroom {
@@ -11,38 +12,28 @@ interface Classroom {
   slug: string;
 }
 
+interface ClassroomsResponse {
+  classrooms: Classroom[];
+}
+
 export async function GET() {
   try {
-    // Fetch classrooms from Django backend
-    const response = await fetch(
-      `${process.env.API_URL}/classrooms`,
-      {
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        // Add cache options if needed
-        // next: { revalidate: 60 }, // revalidate every 60 seconds
-      }
-    );
+    const response = await fetchFromDjango("/classrooms");
 
-    // Check if response is JSON
-    const contentType = response.headers.get("content-type");
-    if (!contentType || !contentType.includes("application/json")) {
-      throw new Error("Server returned non-JSON response");
-    }
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+    if (response.status === 401) {
+      return NextResponse.json(
+        { classrooms: [], error: "Not authenticated" },
+        { status: 401 }
+      );
     }
 
     const data = await response.json();
-
-    return NextResponse.json(data, { status: 200 });
+    return NextResponse.json(data);
   } catch (error) {
-    console.error("Error fetching classrooms:", error);
+    console.error("Error in get-all-classrooms:", error);
     return NextResponse.json(
       {
+        classrooms: [],
         error:
           error instanceof Error
             ? error.message

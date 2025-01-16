@@ -1,7 +1,16 @@
-"use client";
 import "./globals.css";
 import Providers from "./components/Providers";
-import Navbar from "./ui/Navbar";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Luna",
+  description: "Luna Learning Platform",
+};
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+};
 
 export default function RootLayout({
   children,

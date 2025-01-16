@@ -90,8 +90,8 @@ def home(request):
     return render(request, 'home.html')
 
 @csrf_exempt
-@login_required
-@permission_required('lab.view_classrooms', raise_exception=True)
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def get_classrooms_list(request):
     """
     List all classrooms.
