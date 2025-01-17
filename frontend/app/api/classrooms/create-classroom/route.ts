@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { fetchFromDjango } from "@/utils/api";
 
 interface CreateClassroomRequest {
   name: string;
@@ -16,26 +17,13 @@ export async function POST(request: Request) {
       );
     }
 
-    const response = await fetch(
-      `${process.env.API_URL}/create_new_classroom`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify({
-          name: body.name,
-          description: body.description || "",
-        }),
-      }
-    );
-
-    // First check if the response is JSON
-    const contentType = response.headers.get("content-type");
-    if (!contentType || !contentType.includes("application/json")) {
-      throw new Error("Server returned non-JSON response");
-    }
+    const response = await fetchFromDjango("/create_new_classroom", {
+      method: "POST",
+      body: JSON.stringify({
+        name: body.name,
+        description: body.description || "",
+      }),
+    });
 
     const data = await response.json();
 

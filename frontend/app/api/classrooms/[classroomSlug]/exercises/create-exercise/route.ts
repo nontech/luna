@@ -1,3 +1,4 @@
+import { fetchFromDjango } from "@/utils/api";
 import { NextResponse } from "next/server";
 
 export async function POST(
@@ -8,8 +9,8 @@ export async function POST(
     const { classroomSlug } = params;
     const body = await request.json();
 
-    const response = await fetch(
-      `${process.env.API_URL}/classroom/${classroomSlug}/create_new_exercise/`,
+    const response = await fetchFromDjango(
+      `/classroom/${classroomSlug}/create_new_exercise/`,
       {
         method: "POST",
         headers: {

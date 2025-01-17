@@ -1,3 +1,4 @@
+import { fetchFromDjango } from "@/utils/api";
 import { NextResponse } from "next/server";
 
 export async function GET(
@@ -6,14 +7,8 @@ export async function GET(
 ) {
   try {
     const { classroomSlug } = await params;
-    const response = await fetch(
-      `${process.env.API_URL}/classroom/${classroomSlug}/exercises/`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
+    const response = await fetchFromDjango(
+      `/classroom/${classroomSlug}/exercises/`
     );
 
     if (!response.ok) {
