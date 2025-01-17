@@ -280,11 +280,21 @@ def delete_classroom_by_slug(request, slug):
             return JsonResponse({
                 'error': 'You do not have permission to delete this classroom'
             }, status=403)
+
+        # Get all exercises associated with this classroom
+        classroom_exercises = ClassroomExercises.objects.filter(classroom=classroom)
         
+        # Delete all associated exercises
+        for ce in classroom_exercises:
+            # Delete the exercise itself
+            ce.exercise.delete()
+            # The classroom_exercise entry will be automatically deleted due to CASCADE
+        
+        # Delete the classroom (this will automatically delete classroom_exercises entries)
         classroom.delete()
         
         return JsonResponse({
-            'message': 'Classroom deleted successfully',
+            'message': 'Classroom and all associated exercises deleted successfully',
             'slug': slug
         })
         
@@ -294,7 +304,7 @@ def delete_classroom_by_slug(request, slug):
         }, status=404)
     except Exception as e:
         # Log the error for debugging
-        logger.error(f"Error deleting classroom {slug}: {str(e)}")
+        print(f"Error deleting classroom {slug}: {str(e)}")
         return JsonResponse({
             'error': 'An unexpected error occurred'
         }, status=500)

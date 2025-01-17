@@ -57,6 +57,7 @@ export default function MoreClassroomActions({
         classroom={classroom}
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
+        onClassroomUpdate={onClassroomUpdate}
       />
     </>
   );

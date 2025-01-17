@@ -21,10 +21,15 @@ router = DefaultRouter()
 urlpatterns = [
     path('', home, name='home'),
     
-    # CRUD Classroom
+    # Classroom CRUD
+
+    # Create
     path('create_new_classroom', create_new_classroom, name='create_new_classroom'),
+    # Read
     path('classroom/<slug:slug>/', get_classroom_details, name='get_classroom_details'),
+    # Update
     path('update_classroom/<slug:slug>/', update_classroom_by_slug, name='update_classroom_by_slug'),
+    # Delete
     path('delete_classroom/<slug:slug>/', delete_classroom_by_slug, name='delete_classroom_by_slug'),
 
     # Classroom List
@@ -33,10 +38,15 @@ urlpatterns = [
     # Exercise List
     path('classroom/<slug:classroom_slug>/exercises/', get_exercise_list, name='get_exercise_list'),
     
-    # CRUD Exercise
+    # Exercise CRUD
+    
+    # Create
     path('classroom/<slug:classroom_slug>/create_new_exercise/', create_new_exercise, name='create_new_exercise'),
+    # Read
     path('exercise/<uuid:exercise_id>/', get_exercise_details, name='get_exercise_details'),
+    # Update
     path('exercise/update/<uuid:exercise_id>/', update_exercise_by_id, name='update_exercise_by_id'),
+    # Delete
     path('exercise/delete/<uuid:exercise_id>/', delete_exercise_by_id, name='delete_exercise_by_id'),
 
     # Codemirror Test

@@ -3,55 +3,46 @@
 import React from "react";
 import ClassroomListCard from "./components/ClassroomListCard";
 import CreateClassroomModal from "./components/CreateClassroomModal";
-
-interface Classroom {
-  id: number;
-  name: string;
-  description: string;
-  teacher: string;
-  createdAt: string;
-  updatedAt: string;
-  slug: string;
-}
+import { Classroom } from "@/types/classroom";
 
 export default function TeacherClassroomPage() {
   const [classrooms, setClassrooms] = React.useState<Classroom[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
 
-  // Fetch classrooms
-  React.useEffect(() => {
-    const fetchClassrooms = async () => {
-      try {
-        const response = await fetch(
-          "/api/classrooms/get-all-classrooms",
-          {
-            credentials: "include",
-          }
-        );
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.error || "Failed to fetch classrooms");
+  const fetchClassrooms = React.useCallback(async () => {
+    try {
+      const response = await fetch(
+        "/api/classrooms/get-all-classrooms",
+        {
+          credentials: "include",
         }
+      );
+      const data = await response.json();
 
-        setClassrooms(data.classrooms || []);
-        setError(null);
-      } catch (error) {
-        console.error("Error:", error);
-        setError(
-          error instanceof Error
-            ? error.message
-            : "An unexpected error occurred"
-        );
-        setClassrooms([]);
-      } finally {
-        setIsLoading(false);
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to fetch classrooms");
       }
-    };
 
-    fetchClassrooms();
+      setClassrooms(data.classrooms || []);
+      setError(null);
+    } catch (error) {
+      console.error("Error:", error);
+      setError(
+        error instanceof Error
+          ? error.message
+          : "An unexpected error occurred"
+      );
+      setClassrooms([]);
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
+
+  // Fetch classrooms on mount
+  React.useEffect(() => {
+    fetchClassrooms();
+  }, [fetchClassrooms]);
 
   return (
     <div className="container mx-auto py-8">
@@ -74,7 +65,10 @@ export default function TeacherClassroomPage() {
           </p>
         </div>
       ) : (
-        <ClassroomListCard classrooms={classrooms} />
+        <ClassroomListCard
+          classrooms={classrooms}
+          onClassroomUpdate={fetchClassrooms}
+        />
       )}
     </div>
   );

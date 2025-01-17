@@ -1,3 +1,4 @@
+import { fetchFromDjango } from "@/utils/api";
 import { NextResponse } from "next/server";
 
 export async function DELETE(
@@ -6,8 +7,8 @@ export async function DELETE(
 ) {
   try {
     // Make request to Django backend
-    const response = await fetch(
-      `${process.env.API_URL}/delete_classroom/${params.classroomSlug}/`,
+    const response = await fetchFromDjango(
+      `/delete_classroom/${params.classroomSlug}/`,
       {
         method: "DELETE",
         headers: {

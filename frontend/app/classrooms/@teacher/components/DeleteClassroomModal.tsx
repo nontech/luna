@@ -17,12 +17,14 @@ interface DeleteClassroomModalProps {
   classroom: Classroom;
   isOpen: boolean;
   onClose: () => void;
+  onClassroomUpdate: () => Promise<void>;
 }
 
 export default function DeleteClassroomModal({
   classroom,
   isOpen,
   onClose,
+  onClassroomUpdate,
 }: DeleteClassroomModalProps) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -38,6 +40,7 @@ export default function DeleteClassroomModal({
         `/api/classrooms/${classroom.slug}/delete`,
         {
           method: "DELETE",
+          credentials: "include",
         }
       );
 
@@ -49,11 +52,10 @@ export default function DeleteClassroomModal({
 
       setIsSuccess(true);
 
-      // Redirect after successful deletion
+      // Close modal and refresh data after successful deletion
       setTimeout(() => {
         onClose();
-        router.push("/classrooms");
-        router.refresh();
+        onClassroomUpdate();
       }, 1500);
     } catch (error) {
       console.error("Delete error:", error);
@@ -77,7 +79,8 @@ export default function DeleteClassroomModal({
           <DialogDescription className="pt-4">
             Are you sure you want to delete the classroom{" "}
             <span className="font-semibold">{classroom.name}</span>?
-            This action is irreversible.
+            This action is irreversible and will delete all associated
+            exercises.
           </DialogDescription>
         </DialogHeader>
 
@@ -108,7 +111,7 @@ export default function DeleteClassroomModal({
             <p className="text-lg font-semibold">
               Classroom Deleted Successfully!
             </p>
-            <p className="mt-2">Redirecting to classrooms...</p>
+            <p className="mt-2">Refreshing classroom list...</p>
           </div>
         )}
       </DialogContent>
