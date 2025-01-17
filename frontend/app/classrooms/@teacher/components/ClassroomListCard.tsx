@@ -14,10 +14,12 @@ import { Classroom } from "@/types/classroom";
 
 interface ClassroomListCardProps {
   classrooms: Classroom[];
+  onClassroomUpdate: () => Promise<void>;
 }
 
 export default function ClassroomListCard({
   classrooms,
+  onClassroomUpdate,
 }: ClassroomListCardProps) {
   return (
     <div className="grid gap-4">
@@ -30,7 +32,10 @@ export default function ClassroomListCard({
                 {classroom.description}
               </CardDescription>
             </div>
-            <MoreClassroomActions classroom={classroom} />
+            <MoreClassroomActions
+              classroom={classroom}
+              onClassroomUpdate={onClassroomUpdate}
+            />
           </CardHeader>
           <CardContent>
             <div className="flex justify-between items-center">

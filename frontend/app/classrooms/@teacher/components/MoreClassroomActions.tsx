@@ -15,10 +15,12 @@ import { Classroom } from "@/types/classroom";
 
 interface MoreClassroomActionsProps {
   classroom: Classroom;
+  onClassroomUpdate: () => Promise<void>;
 }
 
 export default function MoreClassroomActions({
   classroom,
+  onClassroomUpdate,
 }: MoreClassroomActionsProps) {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -48,6 +50,7 @@ export default function MoreClassroomActions({
         classroom={classroom}
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
+        onClassroomUpdate={onClassroomUpdate}
       />
 
       <DeleteClassroomModal

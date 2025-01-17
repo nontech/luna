@@ -3,9 +3,7 @@ import { ExerciseList } from "./components/ExerciseList";
 import { Exercise } from "@/types/exercise";
 import CreateExerciseModal from "./components/CreateExerciseModal";
 
-async function getClassroomExercises(
-  slug: string
-): Promise<Exercise[]> {
+async function getExercises(slug: string): Promise<Exercise[]> {
   try {
     const response = await fetch(
       `${process.env.APP_URL}/api/classrooms/${slug}/exercises`,
@@ -36,7 +34,9 @@ interface PageProps {
 
 export default async function ClassroomPage({ params }: PageProps) {
   const { classroomSlug } = await params;
-  const exercises = await getClassroomExercises(classroomSlug);
+  // const exercises = await getClassroomExercises(classroomSlug);
+
+  const exercises: Exercise[] = [];
 
   if (!exercises) {
     notFound();

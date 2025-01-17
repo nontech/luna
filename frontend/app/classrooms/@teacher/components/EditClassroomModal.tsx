@@ -20,12 +20,14 @@ interface EditClassroomModalProps {
   classroom: Classroom;
   isOpen: boolean;
   onClose: () => void;
+  onClassroomUpdate: () => Promise<void>;
 }
 
 export default function EditClassroomModal({
   classroom,
   isOpen,
   onClose,
+  onClassroomUpdate,
 }: EditClassroomModalProps) {
   const [classroomName, setClassroomName] = useState(classroom.name);
   const [description, setDescription] = useState(
@@ -59,8 +61,11 @@ export default function EditClassroomModal({
         throw new Error(data.error || "Failed to update classroom");
       }
 
+      // Close the modal first
       onClose();
-      router.refresh();
+
+      // Trigger the parent's fetch function
+      await onClassroomUpdate();
     } catch (error) {
       console.error("Update error:", error);
       alert(
