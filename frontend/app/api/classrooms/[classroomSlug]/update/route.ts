@@ -1,3 +1,4 @@
+import { fetchFromDjango } from "@/utils/api";
 import { NextResponse } from "next/server";
 
 interface UpdateClassroomRequest {
@@ -19,10 +20,11 @@ export async function PUT(
         { status: 400 }
       );
     }
+    const classroomSlug = await params.classroomSlug;
 
     // Make request to Django backend
-    const response = await fetch(
-      `${process.env.API_URL}/update_classroom/${params.classroomSlug}/`,
+    const response = await fetchFromDjango(
+      `/update_classroom/${classroomSlug}/`,
       {
         method: "PUT",
         headers: {

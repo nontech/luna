@@ -226,63 +226,61 @@ def get_classroom_details(request, slug):
         }, status=500)
  
 @csrf_exempt
-@login_required
-@permission_required('lab.change_classrooms', raise_exception=True)
-def update_classroom(request, slug):
-    if request.method != 'PUT':
-        return JsonResponse({
-            'error': 'Method not allowed'
-        }, status=405)
-    
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def update_classroom_by_slug(request, slug):
+    """
+    Update a classroom's details.
+    Only the creator of the classroom can update it.
+    """
     try:
-        # Print request details for debugging
-        print(f"Received request for slug: {slug}")
-        print(f"Request body: {request.body.decode('utf-8')}")
-        
         classroom = get_object_or_404(Classrooms, slug=slug)
-        data = json.loads(request.body)
         
-        # Update fields
+        # Check if user is the creator of the classroom
+        if classroom.creator_user != request.user:
+            return JsonResponse({
+                'error': 'You do not have permission to update this classroom'
+            }, status=403)
+        
+        data = request.data
         classroom.name = data.get('name', classroom.name)
         classroom.description = data.get('description', classroom.description)
         classroom.save()
         
-        response_data = {
+        return JsonResponse({
             'id': classroom.id,
             'name': classroom.name,
             'description': classroom.description,
-            'teacher': classroom.creator_user.full_name,
+            'teacher': classroom.creator_user.username,
             'createdAt': classroom.created_at.isoformat(),
             'updatedAt': classroom.updated_at.isoformat(),
             'slug': classroom.slug,
-        }
-        
-        print(f"Sending response: {response_data}")
-        return JsonResponse(response_data)
+        })
         
     except Classrooms.DoesNotExist:
         return JsonResponse({
             'error': 'Classroom not found'
         }, status=404)
-    except json.JSONDecodeError:
-        return JsonResponse({
-            'error': 'Invalid JSON data'
-        }, status=400)
     except Exception as e:
-        print(f"Error in update_classroom: {str(e)}")
+        # Log the error for debugging
+        logger.error(f"Error updating classroom {slug}: {str(e)}")
         return JsonResponse({
-            'error': str(e)
+            'error': 'An unexpected error occurred'
         }, status=500)
 
 @csrf_exempt
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
 def delete_classroom_by_slug(request, slug):
-    if request.method != 'DELETE':
-        return JsonResponse({
-            'error': 'Method not allowed'
-        }, status=405)
-    
     try:
         classroom = get_object_or_404(Classrooms, slug=slug)
+        
+        # Check if user is the creator of the classroom
+        if classroom.creator_user != request.user:
+            return JsonResponse({
+                'error': 'You do not have permission to delete this classroom'
+            }, status=403)
+        
         classroom.delete()
         
         return JsonResponse({
@@ -295,29 +293,24 @@ def delete_classroom_by_slug(request, slug):
             'error': 'Classroom not found'
         }, status=404)
     except Exception as e:
-        print(f"Error in delete_classroom: {str(e)}")
+        # Log the error for debugging
+        logger.error(f"Error deleting classroom {slug}: {str(e)}")
         return JsonResponse({
-            'error': str(e)
+            'error': 'An unexpected error occurred'
         }, status=500)
-
 
 # CRUD Exercise
 
 @csrf_exempt
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def create_new_exercise(request, classroom_slug):
-    if request.method != 'POST':
-        return JsonResponse({
-            'error': 'Only POST method is allowed'
-        }, status=405)
-        
     try:
         # Get the classroom instance
         classroom = get_object_or_404(Classrooms, slug=classroom_slug)
-        print(f"Found classroom: {classroom.name} (id: {classroom.id})")
         
         # Parse the JSON data from request body
-        data = json.loads(request.body)
-        print(f"Received data: {data}")
+        data = request.data  # DRF already parses JSON
         
         # Validate required fields
         if 'name' not in data:
@@ -325,57 +318,40 @@ def create_new_exercise(request, classroom_slug):
                 'error': 'Name is required'
             }, status=400)
             
-        try:
-            # Create exercise instance
-            exercise = Exercises(
-                name=data['name'],
-                instructions=data.get('instructions', ''),
-                code=data.get('code', ''),
-                creator_user=request.user  # Use the authenticated user
-            )
-            exercise.save()
-            print(f"Created exercise: {exercise.name} (id: {exercise.id})")
-            
-            try:
-                # Create the ClassroomExercises relationship
-                classroom_exercise = ClassroomExercises.objects.create(
-                    classroom=classroom,
-                    exercise=exercise
-                )
-                print(f"Created classroom exercise relationship (id: {classroom_exercise.id})")
-                
-            except Exception as ce_error:
-                # If ClassroomExercises creation fails, delete the exercise
-                exercise.delete()
-                print(f"Error creating classroom exercise relationship: {str(ce_error)}")
-                raise ce_error
-            
-            # Return the created exercise data
-            return JsonResponse({
-                'id': str(exercise.id),  # Convert UUID to string
-                'name': exercise.name,
-                'slug': exercise.slug,
-                'instructions': exercise.instructions,
-                'code': exercise.code,
-                'created_at': exercise.created_at.isoformat(),
-                'classroom_slug': classroom_slug
-            }, status=201)
-            
-        except Exception as e:
-            print(f"Error creating exercise: {str(e)}")
-            raise e
-            
-    except json.JSONDecodeError:
+        # Create exercise instance
+        exercise = Exercises(
+            name=data['name'],
+            instructions=data.get('instructions', ''),
+            code=data.get('code', ''),
+            creator_user=request.user
+        )
+        exercise.save()
+        
+        # Create the ClassroomExercises relationship
+        classroom_exercise = ClassroomExercises.objects.create(
+            classroom=classroom,
+            exercise=exercise
+        )
+        
+        # Return the created exercise data
         return JsonResponse({
-            'error': 'Invalid JSON data'
-        }, status=400)
+            'id': str(exercise.id),
+            'name': exercise.name,
+            'slug': exercise.slug,
+            'instructions': exercise.instructions,
+            'code': exercise.code,
+            'created_at': exercise.created_at.isoformat(),
+            'classroom_slug': classroom_slug
+        }, status=201)
+            
     except Exception as e:
+        # If anything fails, cleanup and return error
+        if 'exercise' in locals():
+            exercise.delete()
         print(f"Error in create_new_exercise: {str(e)}")
         return JsonResponse({
             'error': str(e)
         }, status=500)
-
-
 
 @csrf_exempt
 def update_exercise_by_id(request, exercise_id):

@@ -3,7 +3,7 @@ from rest_framework.routers import DefaultRouter
 from .views import (
     home, codemirror_test,
     create_new_classroom, get_classroom_details, 
-    update_classroom, delete_classroom_by_slug, 
+    update_classroom_by_slug, delete_classroom_by_slug, 
     get_classrooms_list, create_new_exercise,
     update_exercise_by_id, delete_exercise_by_id,
     get_exercise_list, get_exercise_details,
@@ -24,7 +24,7 @@ urlpatterns = [
     # CRUD Classroom
     path('create_new_classroom', create_new_classroom, name='create_new_classroom'),
     path('classroom/<slug:slug>/', get_classroom_details, name='get_classroom_details'),
-    path('update_classroom/<slug:slug>/', update_classroom, name='update_classroom'),
+    path('update_classroom/<slug:slug>/', update_classroom_by_slug, name='update_classroom_by_slug'),
     path('delete_classroom/<slug:slug>/', delete_classroom_by_slug, name='delete_classroom_by_slug'),
 
     # Classroom List
