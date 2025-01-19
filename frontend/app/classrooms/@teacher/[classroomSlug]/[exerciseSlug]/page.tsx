@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
 import { useState, useEffect } from "react";
 
@@ -19,65 +18,35 @@ interface Exercise {
 
 export default function TeacherExercisePage() {
   const [exercise, setExercise] = useState<Exercise | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
   const params = useParams();
   const searchParams = useSearchParams();
-  const classroomSlug = params.classroomSlug as string;
   const exerciseId = searchParams.get("id");
 
   useEffect(() => {
     async function getExerciseDetails() {
       if (!exerciseId) return;
 
-      try {
-        const response = await fetch(`/api/exercise/${exerciseId}`, {
-          credentials: "include",
-        });
+      const response = await fetch(`/api/exercise/${exerciseId}`, {
+        credentials: "include",
+      });
 
-        if (!response.ok) {
-          throw new Error(
-            response.status === 404
-              ? "Exercise not found"
-              : "Failed to fetch exercise"
-          );
-        }
-
-        const data = await response.json();
-        setExercise(data);
-        setError(null);
-      } catch (error) {
-        console.error("Error fetching exercise:", error);
-        setError(
-          error instanceof Error ? error.message : "An error occurred"
+      if (!response.ok) {
+        throw new Error(
+          response.status === 404
+            ? "Exercise not found"
+            : "Failed to fetch exercise"
         );
-      } finally {
-        setLoading(false);
       }
+
+      const data = await response.json();
+      setExercise(data);
     }
 
     getExerciseDetails();
   }, [exerciseId]);
 
-  if (loading) {
-    return <div className="p-4">Loading...</div>;
-  }
-
-  if (error || !exercise) {
-    return (
-      <div className="p-4">
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-          <p>{error || "Exercise not found"}</p>
-          <Link
-            href={`/classrooms/${classroomSlug}`}
-            className="text-red-600 hover:underline mt-2 inline-block"
-          >
-            Return to classroom
-          </Link>
-        </div>
-      </div>
-    );
+  if (!exercise) {
+    return null;
   }
 
   return (
