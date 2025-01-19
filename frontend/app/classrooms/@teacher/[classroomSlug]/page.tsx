@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { ExerciseList } from "./components/ExerciseList";
 import { Exercise } from "@/types/exercise";
 import CreateExerciseModal from "./components/CreateExerciseModal";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 
 interface PageProps {
@@ -17,32 +17,32 @@ export default function ClassroomPage({ params }: PageProps) {
   const params2 = useParams();
   const classroomSlug = params2.classroomSlug as string;
 
-  useEffect(() => {
-    async function getClassroomExercises() {
-      try {
-        const response = await fetch(
-          `/api/classrooms/${classroomSlug}/exercises`,
-          {
-            credentials: "include",
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch exercises");
+  const fetchExercises = useCallback(async () => {
+    try {
+      const response = await fetch(
+        `/api/classrooms/${classroomSlug}/exercises`,
+        {
+          credentials: "include",
         }
+      );
 
-        const data = await response.json();
-        setExercises(data.exercises || []);
-      } catch (error) {
-        console.log("Error:", error);
-        setExercises([]);
-      } finally {
-        setLoading(false);
+      if (!response.ok) {
+        throw new Error("Failed to fetch exercises");
       }
-    }
 
-    getClassroomExercises();
+      const data = await response.json();
+      setExercises(data.exercises || []);
+    } catch (error) {
+      console.log("Error:", error);
+      setExercises([]);
+    } finally {
+      setLoading(false);
+    }
   }, [classroomSlug]);
+
+  useEffect(() => {
+    fetchExercises();
+  }, [fetchExercises]);
 
   if (loading) {
     return <div>Loading...</div>;
@@ -62,6 +62,7 @@ export default function ClassroomPage({ params }: PageProps) {
         <ExerciseList
           exercises={exercises}
           classroomSlug={classroomSlug}
+          onExerciseUpdate={fetchExercises}
         />
       </div>
     </div>

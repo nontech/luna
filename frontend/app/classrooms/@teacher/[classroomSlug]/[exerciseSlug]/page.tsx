@@ -70,7 +70,7 @@ export default function TeacherExercisePage() {
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
           <p>{error || "Exercise not found"}</p>
           <Link
-            href={`/classrooms/@teacher/${classroomSlug}`}
+            href={`/classrooms/${classroomSlug}`}
             className="text-red-600 hover:underline mt-2 inline-block"
           >
             Return to classroom
@@ -87,22 +87,6 @@ export default function TeacherExercisePage() {
           This is Teacher Exercise Page
         </div>
         <h1 className="text-2xl font-bold">{exercise.name}</h1>
-        <div className="space-x-2">
-          <Link
-            href={`/classrooms/${classroomSlug}/exercise/${exercise.id}/edit`}
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
-          >
-            Edit Exercise
-          </Link>
-          <button
-            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition-colors"
-            onClick={() => {
-              /* Add delete handler */
-            }}
-          >
-            Delete Exercise
-          </button>
-        </div>
       </div>
 
       <div className="bg-white p-6 rounded-lg shadow">

@@ -5,25 +5,28 @@ import {
   CardTitle,
   CardContent,
 } from "@/components/ui/card";
-import { ExerciseActions } from "./ExerciseActions";
+import MoreExerciseActions from "./MoreExerciseActions";
 import Link from "next/link";
 
 interface ExerciseCardProps {
   exercise: Exercise;
   classroomSlug: string;
+  onExerciseUpdate: () => Promise<void>;
 }
 
 export function ExerciseCard({
   exercise,
   classroomSlug,
+  onExerciseUpdate,
 }: ExerciseCardProps) {
   return (
     <Card className="hover:bg-accent/50 transition-colors">
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>{exercise.name}</CardTitle>
-        <ExerciseActions
+        <MoreExerciseActions
           exercise={exercise}
           classroomSlug={classroomSlug}
+          onExerciseUpdate={onExerciseUpdate}
         />
       </CardHeader>
       <CardContent>

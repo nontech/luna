@@ -361,12 +361,9 @@ def create_new_exercise(request, classroom_slug):
         }, status=500)
 
 @csrf_exempt
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
 def update_exercise_by_id(request, exercise_id):
-    if request.method != 'PUT':
-        return JsonResponse({
-            'error': 'Method not allowed'
-        }, status=405)
-    
     try:
         exercise = get_object_or_404(Exercises, id=exercise_id)
         data = json.loads(request.body)
@@ -404,12 +401,9 @@ def update_exercise_by_id(request, exercise_id):
         }, status=500)
 
 @csrf_exempt
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
 def delete_exercise_by_id(request, exercise_id):
-    if request.method != 'DELETE':
-        return JsonResponse({
-            'error': 'Method not allowed'
-        }, status=405)
-    
     try:
         exercise = get_object_or_404(Exercises, id=exercise_id)
         

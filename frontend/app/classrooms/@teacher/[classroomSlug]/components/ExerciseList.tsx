@@ -4,11 +4,13 @@ import { ExerciseCard } from "./ExerciseCard";
 interface ExerciseListProps {
   exercises: Exercise[];
   classroomSlug: string;
+  onExerciseUpdate: () => Promise<void>;
 }
 
 export function ExerciseList({
   exercises,
   classroomSlug,
+  onExerciseUpdate,
 }: ExerciseListProps) {
   if (exercises.length === 0) {
     return (
@@ -25,6 +27,7 @@ export function ExerciseList({
           key={exercise.id}
           exercise={exercise}
           classroomSlug={classroomSlug}
+          onExerciseUpdate={onExerciseUpdate}
         />
       ))}
     </div>

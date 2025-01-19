@@ -152,7 +152,7 @@ SIMPLE_JWT = {
     'AUTH_COOKIE_PATH': '/',
     
     # Token lifetime
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
 
     # User identification
