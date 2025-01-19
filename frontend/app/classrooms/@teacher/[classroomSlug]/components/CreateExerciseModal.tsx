@@ -71,7 +71,7 @@ export default function CreateExerciseModal({
         setOutputInstructions("");
         setCode("");
         router.push(
-          `/classrooms/@teacher/${classroomSlug}/${data.slug}?id=${data.id}`
+          `/classrooms/${classroomSlug}/${data.slug}?id=${data.id}`
         );
       }, 1500);
     } catch (error) {

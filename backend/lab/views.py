@@ -128,12 +128,9 @@ def get_classrooms_list(request):
         }, status=500)
 
 @csrf_exempt
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def get_exercise_list(request, classroom_slug):
-    if request.method != 'GET':
-        return JsonResponse({
-            'error': 'Only GET method is allowed'
-        }, status=405)
-        
     try:
         # Get the classroom instance
         classroom = get_object_or_404(Classrooms, slug=classroom_slug)
@@ -435,6 +432,8 @@ def delete_exercise_by_id(request, exercise_id):
         }, status=500)
 
 @csrf_exempt
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def get_exercise_details(request, exercise_id):
     """
     Get details of a specific exercise by its UUID.
@@ -454,25 +453,20 @@ def get_exercise_details(request, exercise_id):
         - created_at
         - updated_at
     """
-    if request.method != 'GET':
-        return JsonResponse({
-            'error': 'Only GET method is allowed'
-        }, status=405)
         
     try:
         exercise = get_object_or_404(Exercises, id=exercise_id)
         
-        # Prepare the response data
         response_data = {
-            'id': str(exercise.id),  # Convert UUID to string
+            'id': str(exercise.id),
             'name': exercise.name,
             'slug': exercise.slug,
             'instructions': exercise.instructions,
             'code': exercise.code,
             'creator': {
                 'id': exercise.creator_user.id,
-                'full_name': exercise.creator_user.full_name,
-                'username': exercise.creator_user.username
+                'username': exercise.creator_user.username,
+                'full_name': f"{exercise.creator_user.first_name} {exercise.creator_user.last_name}".strip()
             },
             'created_at': exercise.created_at.isoformat(),
             'updated_at': exercise.updated_at.isoformat()
@@ -480,12 +474,7 @@ def get_exercise_details(request, exercise_id):
         
         return JsonResponse(response_data)
         
-    except Exercises.DoesNotExist:
-        return JsonResponse({
-            'error': 'Exercise not found'
-        }, status=404)
     except Exception as e:
-        print(f"Error in get_exercise_details: {str(e)}")
         return JsonResponse({
             'error': str(e)
         }, status=500)
@@ -507,10 +496,6 @@ def signup(request):
                 # Generate JWT tokens
                 refresh = RefreshToken.for_user(authenticated_user)
                 
-                # Debug print
-                print(f"Generated tokens for user {authenticated_user.username}")
-                print(f"Access token: {str(refresh.access_token)[:20]}...")
-                
                 response = HttpResponseRedirect('http://localhost:3000')
                 
                 # Set cookies with debug logging
@@ -520,7 +505,6 @@ def signup(request):
                     'samesite': 'Lax',
                     'path': '/',
                 }
-                print("Cookie settings:", cookie_settings)
                 
                 response.set_cookie(
                     'access_token',
@@ -534,9 +518,6 @@ def signup(request):
                     max_age=86400,
                     **cookie_settings
                 )
-                
-                # Debug print final response
-                print("Final response cookies:", response.cookies.items())
                 
                 return response
         else:
@@ -598,9 +579,6 @@ from .authentication import CookieJWTAuthentication
 @permission_classes([IsAuthenticated]) # This is optional since it's the default
 @authentication_classes([CookieJWTAuthentication])
 def get_user_details(request):
-    # Debug: Print request headers and cookies
-    print("Request headers:", request.headers)
-    print("Cookies:", request.COOKIES)
     
     user = request.user
     return Response({

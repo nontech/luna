@@ -6,9 +6,8 @@ export async function fetchFromDjango(
   options: RequestInit = {}
 ) {
   const cookieStore = await cookies();
-  console.log("Cookie Store:", cookieStore);
   const accessToken = cookieStore.get("access_token");
-  console.log("Access Token:", accessToken);
+
   if (!accessToken?.value) {
     return new Response(
       JSON.stringify({ error: "Not authenticated" }),
@@ -35,18 +34,14 @@ export async function fetchFromDjango(
   });
 
   if (!response.ok) {
-    if (response.status === 401) {
-      return new Response(
-        JSON.stringify({ error: "Not authenticated" }),
-        {
-          status: 401,
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-    }
-    throw new Error(`HTTP error! status: ${response.status}`);
+    const errorText = await response.text();
+    console.error("Django API Error:", {
+      status: response.status,
+      statusText: response.statusText,
+      body: errorText,
+      endpoint: endpoint,
+    });
+    throw new Error(`API Error: ${response.status} - ${errorText}`);
   }
 
   return response;
