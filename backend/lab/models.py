@@ -109,22 +109,6 @@ class ClassroomExercises(models.Model):
         verbose_name = 'Classroom Exercise' # This overrides the default singular name 'ClassroomExercises' for the model in Admin panel
         verbose_name_plural = 'Classroom Exercises' # This overrides the default plural name 'ClassroomExercisess' for the model in Admin panel
 
-
-class UserExercises(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    exercise = models.ForeignKey(Exercises, on_delete=models.CASCADE)
-    status = models.CharField(max_length=50)
-    feedback = models.TextField()
-
-    # timestamps
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        db_table = 'user_exercises'  # This overrides the default 'lab_userexercises' table name in the database
-        verbose_name = 'User Exercise' # This overrides the default singular name 'UserExercises' for the model in Admin panel
-        verbose_name_plural = 'User Exercises' # This overrides the default plural name 'UserExercisess' for the model in Admin panel
-
 class ExerciseTests(models.Model):
     exercise = models.ForeignKey(
         Exercises, 
@@ -141,3 +125,29 @@ class ExerciseTests(models.Model):
         db_table = 'exercise_tests'  # This overrides the default 'lab_exercisetests' table name in the database
         verbose_name = 'Exercise Test' # This overrides the default singular name 'ExerciseTests' for the model in Admin panel
         verbose_name_plural = 'Exercise Tests' # This overrides the default plural name 'ExerciseTestss' for the model in Admin panel
+
+class Submissions(models.Model):
+    STATUS_CHOICES = [
+        ('assigned_to_student', 'Assigned to Student'),
+        ('submitted_by_student', 'Submitted by Student'),
+        ('reviewed_by_teacher', 'Reviewed by Teacher')
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='submissions')
+    exercise = models.ForeignKey(Exercises, on_delete=models.CASCADE, related_name='submissions')
+    due_date = models.DateTimeField(null=True, blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='assigned_to_student')
+    feedback = models.TextField(blank=True)
+    submitted_code = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'submissions'  # This overrides the default 'lab_submissions' table name in the database
+        verbose_name = 'Submission' # This overrides the default singular name 'Submissions' for the model in Admin panel
+        verbose_name_plural = 'Submissions' # This overrides the default plural name 'Submissionss' for the model in Admin panel
+        unique_together = ['student', 'exercise']
+
+    def __str__(self):
+        return f"{self.student.username} - {self.exercise.name}"
