@@ -2,6 +2,17 @@
 
 import { useParams, useSearchParams } from "next/navigation";
 import { useState, useEffect } from "react";
+import { CodeEditor } from "@/components/CodeEditor";
+import { runPythonCode } from "@/services/pyodide";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Loader2 } from "lucide-react";
 
 interface Exercise {
   id: string;
@@ -17,10 +28,19 @@ interface Exercise {
 }
 
 export default function TeacherExercisePage() {
-  const [exercise, setExercise] = useState<Exercise | null>(null);
   const params = useParams();
   const searchParams = useSearchParams();
   const exerciseId = searchParams.get("id");
+
+  // Exercise data and form states
+  const [exercise, setExercise] = useState<Exercise | null>(null);
+  const [instructions, setInstructions] = useState("");
+  const [output, setOutput] = useState("");
+  const [code, setCode] = useState("");
+
+  // Loading states
+  const [isSaving, setIsSaving] = useState(false);
+  const [isRunning, setIsRunning] = useState(false);
 
   useEffect(() => {
     async function getExerciseDetails() {
@@ -40,6 +60,8 @@ export default function TeacherExercisePage() {
 
       const data = await response.json();
       setExercise(data);
+      setInstructions(data.instructions);
+      setCode(data.code);
     }
 
     getExerciseDetails();
@@ -49,54 +71,134 @@ export default function TeacherExercisePage() {
     return null;
   }
 
+  const handleSave = async () => {
+    if (isSaving || !exercise) return;
+
+    setIsSaving(true);
+
+    try {
+      const response = await fetch(`/api/exercise/${exercise.id}`, {
+        method: "PUT",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          instructions,
+          code,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to save exercise");
+      }
+
+      const data = await response.json();
+      // Update local state with saved data
+      setExercise(data);
+      setInstructions(data.instructions);
+      setCode(data.code);
+    } catch (error) {
+      console.error("Error saving exercise:", error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleRunCode = async () => {
+    if (isRunning || !exercise) return;
+
+    setIsRunning(true);
+    console.log("Running code:", code);
+
+    try {
+      // This connects to our Pyodide service
+      const result = await runPythonCode(code);
+      // Output shows in the Output card
+      setOutput(result.output || result.error || "No output");
+    } catch (error) {
+      setOutput(
+        error instanceof Error ? error.message : "Error running code"
+      );
+    } finally {
+      setIsRunning(false);
+    }
+  };
+
   return (
-    <div className="space-y-6">
+    <div className="container mx-auto p-6 space-y-6">
       <div className="flex justify-between items-center">
-        <div className="flex flex-col">
-          This is Teacher Exercise Page
-        </div>
-        <h1 className="text-2xl font-bold">{exercise.name}</h1>
+        <h1 className="text-3xl font-bold">{exercise.name}</h1>
+        <Button
+          onClick={handleSave}
+          disabled={isSaving}
+          variant="default"
+        >
+          {isSaving && (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          )}
+          {isSaving ? "Saving..." : "Save Exercise"}
+        </Button>
       </div>
 
-      <div className="bg-white p-6 rounded-lg shadow">
-        <h2 className="text-xl font-semibold mb-4">
-          Exercise Details
-        </h2>
-        <div className="space-y-4">
-          <div>
-            <h3 className="font-medium text-gray-700">
-              Instructions
-            </h3>
-            <p className="mt-1 text-gray-600">
-              {exercise.instructions}
-            </p>
-          </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Left Column */}
+        <div className="space-y-6">
+          {/* Instructions Card*/}
+          <Card>
+            <CardHeader>
+              <CardTitle>Instructions</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Textarea
+                value={instructions}
+                onChange={(e) => setInstructions(e.target.value)}
+                className="min-h-[200px] resize-none"
+                placeholder="Write exercise instructions here..."
+              />
+            </CardContent>
+          </Card>
 
-          <div>
-            <h3 className="font-medium text-gray-700">
-              Expected Output
-            </h3>
-            <p className="mt-1 text-gray-600">
-              {exercise.output_instructions}
-            </p>
-          </div>
-
-          <div>
-            <h3 className="font-medium text-gray-700">
-              Initial Code
-            </h3>
-            <pre className="mt-1 p-4 bg-gray-50 rounded-md overflow-x-auto">
-              <code>{exercise.code}</code>
-            </pre>
-          </div>
+          {/* Output Card */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Output</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="bg-muted p-4 rounded-md font-mono text-sm whitespace-pre-wrap min-h-[100px]">
+                {output || "Code output will appear here"}
+              </div>
+            </CardContent>
+          </Card>
         </div>
-      </div>
 
-      <div className="bg-white p-6 rounded-lg shadow">
-        <h2 className="text-xl font-semibold mb-4">
-          Student Submissions
-        </h2>
-        {/* Add submissions list */}
+        {/* Right Column */}
+        {/* Code Editor */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle>Code Editor</CardTitle>
+            <Button
+              onClick={handleRunCode}
+              disabled={isRunning}
+              size="sm"
+            >
+              {isRunning && (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              )}
+              {isRunning ? "Running..." : "Run Code"}
+            </Button>
+          </CardHeader>
+          <CardContent>
+            <div className="h-[600px]">
+              <CodeEditor
+                initialCode={code}
+                onChange={(newCode) => {
+                  setCode(newCode);
+                }}
+              />
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
