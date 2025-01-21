@@ -22,17 +22,17 @@ export function CodeEditor({
   const editorRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
+  // Initialize editor
   useEffect(() => {
-    if (!containerRef.current) return;
+    if (!containerRef.current || editorRef.current) return;
 
-    // Create CodeMirror instance
     const editor = window.CodeMirror(containerRef.current, {
-      value: initialCode, // Initial content
-      mode: "python", // Syntax highlighting mode
-      theme: "monokai", // Visual theme
-      lineNumbers: true, // Show line numbers
-      readOnly: readOnly, // Enable/disable editing
-      viewportMargin: Infinity, // For proper height calculation
+      value: initialCode,
+      mode: "python",
+      theme: "monokai",
+      lineNumbers: true,
+      readOnly: readOnly,
+      viewportMargin: Infinity,
     });
 
     editor.on("change", (instance: any) => {
@@ -43,14 +43,33 @@ export function CodeEditor({
 
     editorRef.current = editor;
 
-    // Cleanup function to remove the editor when the component unmounts
     return () => {
       if (editorRef.current) {
         const element = editorRef.current.getWrapperElement();
         element.remove();
+        editorRef.current = null;
       }
     };
-  }, [initialCode, onChange, readOnly]);
+  }, []); // Empty deps array since this should only run once on mount
+
+  // Handle readOnly changes
+  useEffect(() => {
+    if (editorRef.current) {
+      editorRef.current.setOption("readOnly", readOnly);
+    }
+  }, [readOnly]);
+
+  // Handle initialCode changes from parent
+  useEffect(() => {
+    if (editorRef.current) {
+      const currentValue = editorRef.current.getValue();
+      if (currentValue !== initialCode) {
+        const cursor = editorRef.current.getCursor();
+        editorRef.current.setValue(initialCode);
+        editorRef.current.setCursor(cursor);
+      }
+    }
+  }, [initialCode]);
 
   return (
     <div

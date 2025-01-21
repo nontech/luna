@@ -79,9 +79,16 @@ class Exercises(models.Model):
 
 
 class Tests(models.Model):
-    category = models.CharField(max_length=50)
-    test_feedback = models.TextField(default='')
-
+    TEST_TYPES = [
+        ('includes', 'Output includes expected output'),
+        ('exact', 'Output matches expected output exactly'),
+    ]
+    
+    name = models.CharField(max_length=50)  # Changed from category
+    test_type = models.CharField(max_length=20, choices=TEST_TYPES, default='includes')
+    expected_output = models.TextField(default='')
+    help_text = models.TextField(default='')  # Changed from test_feedback
+    
     # timestamps
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

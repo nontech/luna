@@ -11,6 +11,11 @@ from .views import (
     get_user_details,
     login_view,
     logout_view,
+    get_tests_list,
+    create_new_test,
+    get_test_details,
+    update_test_by_id,
+    delete_test_by_id,
 )
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from django.contrib.auth import views as auth_views
@@ -37,6 +42,9 @@ urlpatterns = [
 
     # Exercise List
     path('classroom/<slug:classroom_slug>/exercises/', get_exercise_list, name='get_exercise_list'),
+
+    # Test List
+    path('exercise/<uuid:exercise_id>/tests/', get_tests_list, name='get_tests_list'),
     
     # Exercise CRUD
     
@@ -48,6 +56,18 @@ urlpatterns = [
     path('exercise/update/<uuid:exercise_id>/', update_exercise_by_id, name='update_exercise_by_id'),
     # Delete
     path('exercise/delete/<uuid:exercise_id>/', delete_exercise_by_id, name='delete_exercise_by_id'),
+
+
+    # Test CRUD
+
+    # Create
+    path('exercise/<uuid:exercise_id>/create_new_test/', create_new_test, name='create_new_test'),
+    # Read
+    path('test/<uuid:test_id>/', get_test_details, name='get_test_details'),
+    # Update
+    path('test/update/<uuid:test_id>/', update_test_by_id, name='update_test_by_id'),
+    # Delete
+    path('test/delete/<uuid:test_id>/', delete_test_by_id, name='delete_test_by_id'),
 
     # Codemirror Test
     path('codemirror-test/', codemirror_test, name='codemirror_test'),

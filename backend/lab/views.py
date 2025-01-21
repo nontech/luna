@@ -33,7 +33,7 @@ from rest_framework.authentication import SessionAuthentication
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 # Models
-from .models import Classrooms, Exercises, ClassroomExercises, ExerciseTests
+from .models import Classrooms, Exercises, ClassroomExercises, ExerciseTests, Tests
 from django.contrib.auth.models import User
 
 # Auth
@@ -662,3 +662,201 @@ def get_user_role(user):
     elif user.groups.filter(name='Students').exists():
         return 'student'
     return None
+
+@csrf_exempt
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_tests_list(request, exercise_id):
+    """
+    Get all tests for a specific exercise.
+    """
+    try:
+        # Get all tests for this exercise through ExerciseTests
+        exercise_tests = ExerciseTests.objects.filter(exercise_id=exercise_id)
+        
+        # Extract test data
+        tests_data = [{
+            'id': et.test.id,
+            'name': et.test.name,
+            'test_type': et.test.test_type,
+            'expected_output': et.test.expected_output,
+            'help_text': et.test.help_text,
+            'created_at': et.test.created_at.isoformat(),
+            'updated_at': et.test.updated_at.isoformat(),
+        } for et in exercise_tests]
+        
+        return JsonResponse({
+            'tests': tests_data
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'error': str(e)
+        }, status=500)
+
+@csrf_exempt
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def create_new_test(request, exercise_id):
+    """
+    Create a new test for an exercise.
+    """
+    try:
+        # Get the exercise instance
+        exercise = get_object_or_404(Exercises, id=exercise_id)
+        
+        # Parse the JSON data from request body
+        data = request.data
+        
+        # Validate required fields
+        required_fields = ['name', 'test_type', 'expected_output']
+        for field in required_fields:
+            if field not in data:
+                return JsonResponse({
+                    'error': f'{field} is required'
+                }, status=400)
+        
+        # Validate test_type
+        if data['test_type'] not in ['includes', 'exact']:
+            return JsonResponse({
+                'error': 'test_type must be either "includes" or "exact"'
+            }, status=400)
+            
+        # Create test instance
+        test = Tests(
+            name=data['name'],
+            test_type=data['test_type'],
+            expected_output=data['expected_output'],
+            help_text=data.get('help_text', '')
+        )
+        test.save()
+        
+        # Create the ExerciseTests relationship
+        exercise_test = ExerciseTests.objects.create(
+            exercise=exercise,
+            test=test
+        )
+        
+        # Return the created test data
+        return JsonResponse({
+            'id': test.id,
+            'name': test.name,
+            'test_type': test.test_type,
+            'expected_output': test.expected_output,
+            'help_text': test.help_text,
+            'created_at': test.created_at.isoformat(),
+            'exercise_id': str(exercise_id)
+        }, status=201)
+            
+    except Exception as e:
+        # If anything fails, cleanup and return error
+        if 'test' in locals():
+            test.delete()
+        print(f"Error in create_new_test: {str(e)}")
+        return JsonResponse({
+            'error': str(e)
+        }, status=500)
+
+@csrf_exempt
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_test_details(request, test_id):
+    """
+    Get details of a specific test.
+    """
+    try:
+        test = get_object_or_404(Tests, id=test_id)
+        
+        response_data = {
+            'id': test.id,
+            'name': test.name,
+            'test_type': test.test_type,
+            'expected_output': test.expected_output,
+            'help_text': test.help_text,
+            'created_at': test.created_at.isoformat(),
+            'updated_at': test.updated_at.isoformat()
+        }
+        
+        return JsonResponse(response_data)
+        
+    except Exception as e:
+        return JsonResponse({
+            'error': str(e)
+        }, status=500)
+
+@csrf_exempt
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def update_test_by_id(request, test_id):
+    """
+    Update a test's details.
+    """
+    try:
+        test = get_object_or_404(Tests, id=test_id)
+        data = request.data
+        
+        # Update fields
+        if 'name' in data:
+            test.name = data['name']
+        if 'test_type' in data:
+            if data['test_type'] not in ['includes', 'exact']:
+                return JsonResponse({
+                    'error': 'test_type must be either "includes" or "exact"'
+                }, status=400)
+            test.test_type = data['test_type']
+        if 'expected_output' in data:
+            test.expected_output = data['expected_output']
+        if 'help_text' in data:
+            test.help_text = data['help_text']
+            
+        test.save()
+        
+        response_data = {
+            'id': test.id,
+            'name': test.name,
+            'test_type': test.test_type,
+            'expected_output': test.expected_output,
+            'help_text': test.help_text,
+            'created_at': test.created_at.isoformat(),
+            'updated_at': test.updated_at.isoformat()
+        }
+        
+        return JsonResponse(response_data)
+        
+    except Tests.DoesNotExist:
+        return JsonResponse({
+            'error': 'Test not found'
+        }, status=404)
+    except Exception as e:
+        print(f"Error in update_test: {str(e)}")
+        return JsonResponse({
+            'error': str(e)
+        }, status=500)
+
+@csrf_exempt
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_test_by_id(request, test_id):
+    """
+    Delete a test.
+    """
+    try:
+        test = get_object_or_404(Tests, id=test_id)
+        
+        # Delete the test
+        test.delete()
+        
+        return JsonResponse({
+            'message': 'Test deleted successfully',
+            'id': test_id
+        })
+        
+    except Tests.DoesNotExist:
+        return JsonResponse({
+            'error': 'Test not found'
+        }, status=404)
+    except Exception as e:
+        print(f"Error in delete_test: {str(e)}")
+        return JsonResponse({
+            'error': str(e)
+        }, status=500)

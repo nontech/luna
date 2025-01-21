@@ -3,7 +3,10 @@
 import { useParams, useSearchParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import { CodeEditor } from "@/components/CodeEditor";
-import { runPythonCode } from "@/services/pyodide";
+import {
+  runPythonCode,
+  runPythonCodeWithTests,
+} from "@/services/pyodide";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -13,6 +16,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
+import { TestManager } from "./components/TestManager";
 
 interface Exercise {
   id: string;
@@ -77,17 +81,20 @@ export default function TeacherExercisePage() {
     setIsSaving(true);
 
     try {
-      const response = await fetch(`/api/exercise/${exercise.id}`, {
-        method: "PUT",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          instructions,
-          code,
-        }),
-      });
+      const response = await fetch(
+        `/api/exercise/${exercise.id}/update`,
+        {
+          method: "PUT",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            instructions,
+            code,
+          }),
+        }
+      );
 
       if (!response.ok) {
         throw new Error("Failed to save exercise");
@@ -112,10 +119,33 @@ export default function TeacherExercisePage() {
     console.log("Running code:", code);
 
     try {
-      // This connects to our Pyodide service
-      const result = await runPythonCode(code);
-      // Output shows in the Output card
-      setOutput(result.output || result.error || "No output");
+      // Fetch tests for this exercise
+      const testsResponse = await fetch(
+        `/api/exercise/${exercise.id}/tests`
+      );
+      if (!testsResponse.ok) {
+        throw new Error("Failed to fetch tests");
+      }
+      const { tests } = await testsResponse.json();
+
+      // Run code with tests
+      const result = await runPythonCodeWithTests(code, tests);
+
+      // Update output to show both code output and test results
+      const outputText = [
+        "Code Output:",
+        result.output,
+        "",
+        "Test Results:",
+        ...result.testResults.map(
+          (test) =>
+            `${test.name}: ${
+              test.passed ? "✅ Passed" : "❌ Failed"
+            }${!test.passed ? `\n   Help: ${test.feedback}` : ""}`
+        ),
+      ].join("\n");
+
+      setOutput(outputText);
     } catch (error) {
       setOutput(
         error instanceof Error ? error.message : "Error running code"
@@ -168,6 +198,16 @@ export default function TeacherExercisePage() {
               <div className="bg-muted p-4 rounded-md font-mono text-sm whitespace-pre-wrap min-h-[100px]">
                 {output || "Code output will appear here"}
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Test Manager Card */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Tests</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <TestManager exerciseId={exercise.id} />
             </CardContent>
           </Card>
         </div>
