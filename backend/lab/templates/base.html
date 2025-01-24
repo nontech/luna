@@ -3,7 +3,10 @@
   <head>
     <title>{% block title %}Luna{% endblock %}</title>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
     <!-- DaisyUI -->
     <link
       href="https://cdn.jsdelivr.net/npm/daisyui@4.11.1/dist/full.min.css"
@@ -31,7 +34,7 @@
       input[type="email"] {
         @apply input input-bordered w-full;
       }
-      
+
       /* Style Django form errors */
       .errorlist {
         @apply text-error text-sm mt-1;
@@ -40,28 +43,6 @@
   </head>
   <!-- Choose theme -->
   <body class="flex flex-col h-full" data-theme="light">
-    <!-- Navbar -->
-    <nav class="navbar bg-base-200 px-12 py-5 shadow-md">
-
-        <div class="navbar-start text-primary text-2xl font-bold"><a href={% url 'home' %}>Luna</a></div>
-      <div class="navbar-end">
-        <div class="flex space-x-4">
-            {% if user.is_authenticated %}
-            <form method="post" action="{% url 'logout' %}" class="inline">
-              {% csrf_token %}
-              <button type="submit" class="btn btn-outline btn-primary">Logout</button>
-            </form>
-            {% else %}
-            <a href="{% url 'login' %}" class="btn btn-outline btn-primary">Login</a>
-            <a href="{% url 'signup' %}" class="btn btn-outline btn-primary">Sign Up</a>
-            {% endif %}
-            <a href="{% url 'home' %}" class="btn btn-outline btn-primary">Home</a>
-            <button class="btn btn-outline btn-primary">About Us</button>
-            <a href="{% url 'test_email' %}" class="btn btn-outline btn-primary">Test Email</a>
-        </div>
-      </div>
-    </nav>
-
     <!-- Content -->
     <div class="flex-grow bg-white">
       {% block content %}
@@ -74,7 +55,9 @@
       class="footer footer-center p-10 bg-base-200 text-base-content rounded"
     >
       <aside>
-        <p>Copyright © 2024 - All right reserved by meetlocal.world Ltd</p>
+        <p>
+          Copyright © 2024 - All right reserved by meetlocal.world Ltd
+        </p>
       </aside>
     </footer>
   </body>
