@@ -1,9 +1,9 @@
 "use client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect } from "react";
-import ClassroomListCard from "./ui/ClassroomListCard";
 import LandingPage from "./components/LandingPage";
-import Navbar from "./ui/Navbar";
+import TeacherHome from "./components/TeacherHome";
+import StudentHome from "./components/StudentHome";
 
 export default function Home() {
   const { user, checkAuth, isLoading } = useAuth();
@@ -16,20 +16,20 @@ export default function Home() {
   }, [checkAuth]);
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    );
   }
 
   if (!user) {
     return <LandingPage />;
   }
 
-  return (
-    <div>
-      <Navbar />
-      <div className="pl-20 pt-10">
-        <h1>Home Page</h1>
-        {/* <ClassroomListCard /> */}
-      </div>
-    </div>
-  );
+  if (user.user_role === "teacher") {
+    return <TeacherHome />;
+  }
+
+  return <StudentHome />;
 }
