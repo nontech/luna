@@ -384,9 +384,15 @@ def update_exercise_by_id(request, exercise_id):
         data = json.loads(request.body)
         
         # Update fields
-        exercise.name = data.get('name', exercise.name)
-        exercise.instructions = data.get('instructions', exercise.instructions)
-        exercise.code = data.get('code', exercise.code)
+        if 'name' in data:
+            exercise.name = data['name']
+            exercise.slug = slugify(data['name'])  # Update slug when name changes
+            
+        if 'instructions' in data:
+            exercise.instructions = data.get('instructions', exercise.instructions)
+        if 'code' in data:
+            exercise.code = data.get('code', exercise.code)
+            
         exercise.save()
         
         response_data = {

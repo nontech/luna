@@ -32,7 +32,6 @@ export default function EditExerciseModal({
   const [formData, setFormData] = useState({
     name: exercise.name,
     instructions: exercise.instructions,
-    output_instructions: exercise.output_instructions,
     code: exercise.code,
   });
   const [isUpdating, setIsUpdating] = useState(false);
@@ -61,6 +60,7 @@ export default function EditExerciseModal({
         throw new Error("Failed to update exercise");
       }
 
+      const data = await response.json();
       setIsSuccess(true);
 
       // Close modal and refresh data after successful update
@@ -82,7 +82,6 @@ export default function EditExerciseModal({
   const hasChanges =
     formData.name !== exercise.name ||
     formData.instructions !== exercise.instructions ||
-    formData.output_instructions !== exercise.output_instructions ||
     formData.code !== exercise.code;
 
   return (
@@ -116,19 +115,6 @@ export default function EditExerciseModal({
                     setFormData({
                       ...formData,
                       instructions: e.target.value,
-                    })
-                  }
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="output">Output Instructions</Label>
-                <Textarea
-                  id="output"
-                  value={formData.output_instructions}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      output_instructions: e.target.value,
                     })
                   }
                 />
