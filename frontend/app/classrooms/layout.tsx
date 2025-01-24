@@ -1,6 +1,7 @@
 import React from "react";
 import Navbar from "@/app/ui/Navbar";
 import type { Metadata } from "next";
+import Breadcrumb from "@/app/components/Breadcrumb";
 
 export const metadata: Metadata = {
   title: "Classrooms",
@@ -21,7 +22,10 @@ export default function ClassroomLayout({
   return (
     <div>
       <Navbar />
-      <ClientLayout teacher={teacher} student={student} />
+      <div className="pl-20 pt-6">
+        <Breadcrumb />
+        <ClientLayout teacher={teacher} student={student} />
+      </div>
     </div>
   );
 }
