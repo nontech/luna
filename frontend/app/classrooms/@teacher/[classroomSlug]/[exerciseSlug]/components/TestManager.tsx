@@ -1,4 +1,3 @@
-// frontend/app/classrooms/@teacher/[classroomSlug]/[exerciseSlug]/components/TestManager.tsx
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import CreateTestModal from "./CreateTestModal";

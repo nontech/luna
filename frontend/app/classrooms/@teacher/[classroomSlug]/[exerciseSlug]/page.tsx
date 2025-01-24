@@ -6,6 +6,9 @@ import { CodeEditor } from "@/components/CodeEditor";
 import {
   runPythonCode,
   runPythonCodeWithTests,
+  OutputItem,
+  setOutputCallback,
+  provideInput,
 } from "@/services/pyodide";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -31,6 +34,76 @@ interface Exercise {
   };
 }
 
+function OutputDisplay({ items }: { items: OutputItem[] }) {
+  // State to store user input values
+  const [inputValues, setInputValues] = useState<
+    Record<string, string>
+  >({});
+
+  // When the user types their input and clicks submit
+  const handleInputSubmit = (id: string) => {
+    const value = inputValues[id];
+    if (value !== undefined) {
+      // This will resolve the Promise we created earlier
+      provideInput(id, value);
+      // Clear the input field after submission
+      setInputValues((prev) => {
+        const next = { ...prev };
+        delete next[id];
+        return next;
+      });
+    }
+  };
+
+  return (
+    // OutputDisplay component
+    <div className="space-y-2 font-mono text-sm">
+      {items.map((item, index) => (
+        // For each item in the items array
+        <div key={index} className="space-y-1">
+          {item.type === "output" ? (
+            // If the item is an output item
+            <pre className="whitespace-pre-wrap break-words">
+              {item.content}
+            </pre>
+          ) : (
+            // If the item is an input item
+            <div className="flex flex-col space-y-2 bg-gray-100 p-2 rounded">
+              <div>{item.content}</div>
+              <div className="flex space-x-2">
+                <input
+                  type="text"
+                  value={inputValues[item.id!] || ""}
+                  onChange={(e) =>
+                    setInputValues((prev) => ({
+                      ...prev,
+                      [item.id!]: e.target.value,
+                    }))
+                  }
+                  onKeyPress={(e) => {
+                    if (e.key === "Enter") {
+                      handleInputSubmit(item.id!);
+                    }
+                  }}
+                  className="flex-1 px-2 py-1 border rounded"
+                  placeholder="Enter your input..."
+                />
+                <Button
+                  onClick={() => handleInputSubmit(item.id!)}
+                  size="sm"
+                  variant="secondary"
+                >
+                  Submit
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function TeacherExercisePage() {
   const params = useParams();
   const searchParams = useSearchParams();
@@ -41,6 +114,7 @@ export default function TeacherExercisePage() {
   const [instructions, setInstructions] = useState("");
   const [output, setOutput] = useState("");
   const [code, setCode] = useState("");
+  const [outputItems, setOutputItems] = useState<OutputItem[]>([]);
 
   // Loading states
   const [isSaving, setIsSaving] = useState(false);
@@ -70,6 +144,28 @@ export default function TeacherExercisePage() {
 
     getExerciseDetails();
   }, [exerciseId]);
+
+  // When the component mounts
+  useEffect(() => {
+    // This is the FIRST callback that gets created
+    // It's a function that knows how to update the React component's state to display new output or input requests.
+    // The actual value hasn't been called yet - it's just waiting to be used when Python code generates output or requests input
+    const callback = (item: OutputItem | string) => {
+      setOutputItems((prev) => [
+        ...prev,
+        // If item is a string, convert it to an OutputItem
+        typeof item === "string"
+          ? { type: "output", content: item }
+          : item,
+      ]);
+    };
+    // Store this callback in pyodide.ts
+    setOutputCallback(callback);
+    // Clean up the callback when the component unmounts
+    return () => {
+      setOutputCallback(null);
+    };
+  }, []);
 
   if (!exercise) {
     return null;
@@ -116,7 +212,7 @@ export default function TeacherExercisePage() {
     if (isRunning || !exercise) return;
 
     setIsRunning(true);
-    console.log("Running code:", code);
+    setOutputItems([]); // Clear previous output
 
     try {
       // Fetch tests for this exercise
@@ -131,25 +227,38 @@ export default function TeacherExercisePage() {
       // Run code with tests
       const result = await runPythonCodeWithTests(code, tests);
 
-      // Update output to show both code output and test results
-      const outputText = [
-        "Code Output:",
-        result.output,
-        "",
-        "Test Results:",
-        ...result.testResults.map(
-          (test) =>
-            `${test.name}: ${
-              test.passed ? "✅ Passed" : "❌ Failed"
-            }${!test.passed ? `\n   Help: ${test.feedback}` : ""}`
-        ),
-      ].join("\n");
+      // Only add test results if we have any
+      if (tests && tests.length > 0) {
+        const testResults = [
+          "",
+          "Test Results:",
+          ...result.testResults.map(
+            (test) =>
+              `${test.name}: ${
+                test.passed ? "✅ Passed" : "❌ Failed"
+              }${!test.passed ? `\n   Help: ${test.feedback}` : ""}`
+          ),
+        ].join("\n");
 
-      setOutput(outputText);
+        setOutputItems((prev) => [
+          ...prev,
+          {
+            type: "output",
+            content: testResults,
+          },
+        ]);
+      }
     } catch (error) {
-      setOutput(
-        error instanceof Error ? error.message : "Error running code"
-      );
+      setOutputItems((prev) => [
+        ...prev,
+        {
+          type: "output",
+          content:
+            error instanceof Error
+              ? error.message
+              : "Error running code",
+        },
+      ]);
     } finally {
       setIsRunning(false);
     }
@@ -195,8 +304,8 @@ export default function TeacherExercisePage() {
               <CardTitle>Output</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="bg-muted p-4 rounded-md font-mono text-sm whitespace-pre-wrap min-h-[100px]">
-                {output || "Code output will appear here"}
+              <div className="bg-muted p-4 rounded-md">
+                <OutputDisplay items={outputItems} />
               </div>
             </CardContent>
           </Card>

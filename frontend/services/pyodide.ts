@@ -49,36 +49,41 @@ let pyodide: any = null;
 // When the user types their response (input) & submits in the UI, this function is called
 export function provideInput(id: string, value: string) {
   console.log("provideInput called with:", { id, value });
+  // Get the resolver function we stored earlier
   const resolver = pendingInputResolvers.get(id);
   if (resolver) {
     console.log("Resolver found for input, calling with value");
+    // Calling the resolver completes the Promise with the input value
     resolver(value);
+    // Delete the resolver from the map
     pendingInputResolvers.delete(id);
   } else {
     console.log("No resolver found for input id:", id);
   }
 }
 
+// This function is called by the useEffect in the component that mounts
 export function setOutputCallback(
   callback: ((item: OutputItem) => void) | null
 ) {
   outputCallback = callback;
 }
 
-// Custom input handling function
+// When Python code calls input(), it triggers this custom createInputFunction which creates a new Promise
+// The _input_func inside Python code setup calls createInputFunction, where the Promise and resolver are created
+// _input_func
 async function createInputFunction(prompt: string): Promise<string> {
   console.log("createInputFunction called with prompt:", prompt);
   // Generate unique ID for input
   const inputId = Math.random().toString(36).substring(7);
-  console.log("Generated inputId:", inputId);
 
+  // Uses the callback we stored earlier
   if (outputCallback) {
     console.log("Calling outputCallback with input-required");
 
-    // Let's say we have this Python code:
-    // name = input("What's your name? ")  # Python code
-
-    // Notify UI that input is needed
+    // # Let's say we have the following Python code:
+    //   name = input("What's your name? ")
+    // Then, it calls this callback with type: "input-required", which tells the UI we need input
     outputCallback({
       type: "input-required",
       content: prompt, // e.g., "What's your name?"
@@ -88,9 +93,11 @@ async function createInputFunction(prompt: string): Promise<string> {
     console.log("No outputCallback available!");
   }
 
-  // Wait for input to be provided
+  // This Promise will wait until the user provides input
   return new Promise((resolve) => {
     console.log("Setting up input resolver for id:", inputId);
+    // The 'resolve' parameter is a function provided by the Promise constructor
+    // The resolve function is stored in pendingInputResolvers with the inputId
     pendingInputResolvers.set(inputId, resolve);
   });
 }
@@ -140,13 +147,15 @@ export async function runPythonCode(
       };
     });
 
-    // 2. Set up input/output bridges
-    // Sets up JavaScript functions that Python can call
+    // 2. Set up input/output bridges between Python and JavaScript
+
+    // Set up JS output handling function that Python can call
+    // Handles Python print statements
     pyodide.globals.set("_outputCallback", (text: string) => {
-      // Handles Python print statements
       // This is the callback that updates the UI with the output
+      // This is our stored setOutputItems function from [exerciseSlug]/page.tsx
       if (outputCallback) {
-        // Forward the output to the JS callback
+        // Calls the callback with an object with type: "output" and content: text
         outputCallback({
           type: "output",
           content: text,
@@ -155,7 +164,8 @@ export async function runPythonCode(
         console.log("No JS outputCallback available!");
       }
     });
-    // Custom input handling function
+
+    // Set up JS input handling function that Python can call
     pyodide.globals.set("_input_func", async (prompt: string) => {
       // Handles Python input() calls
       // Create input function
@@ -163,7 +173,8 @@ export async function runPythonCode(
       return result;
     });
 
-    // 3. Set up the Python environment with our custom input and output handling
+    // 3. Set up Python environment with our custom input and output handling functions created earlier
+
     // When Python code does this:
     // name = input("What's your name? ")
     // # The following happens:
@@ -171,7 +182,7 @@ export async function runPythonCode(
     // # 2. async_input is called
     // # 3. Prompt is written to stdout (appears in UI via _outputCallback)
     // # 4. _input_func is called (JavaScript shows input field)
-    // # 5. User types "Alice" and submits
+    // # 5. User types "Alice" and submits in JS UI
     // # 6. "Alice" is written to stdout
     // # 7. "Alice" is returned to the Python code
     await pyodide.runPythonAsync(`
@@ -216,8 +227,7 @@ except Exception as e:
     _original_stderr.write(f"Error setting up IO: {str(e)}\\n")
     raise
 
-# Handles asynchronous input requests
-# When Python code calls input():
+# Handles asynchronous input requests, when Python code calls input()
 async def async_input(prompt=""):
     try:
         # Write prompt to stdout
@@ -237,8 +247,8 @@ async def async_input(prompt=""):
         _original_stderr.write(f"Error in async_input: {str(e)}\\n")
         raise
 
+# We replace Python's built-in input() function with this custom version that allows Python to use input() normally
 # Wraps the async input function to make it synchronous
-# Allows regular Python code to use input() normally
 def sync_input(prompt=""):
     try:
         # Get the event loop
@@ -289,7 +299,7 @@ ${indentedCode}
 
     console.log("Running user code...");
     try {
-      // 6. Second Call: Execute the function
+      // 6. Second Call: Execute the function meaning run the user's code
       const runCodePromise = pyodide.runPythonAsync(
         "await __run_code()"
       );
@@ -347,6 +357,7 @@ export async function runPythonCodeWithTests(
   code: string,
   tests: Test[]
 ): Promise<{ output: string; testResults: TestResult[] }> {
+  // Run the code
   const { output, error } = await runPythonCode(code);
 
   // If there's an error, mark all tests as failed
