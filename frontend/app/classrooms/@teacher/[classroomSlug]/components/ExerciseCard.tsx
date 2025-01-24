@@ -30,16 +30,31 @@ export function ExerciseCard({
         />
       </CardHeader>
       <CardContent>
-        <p className="text-sm text-muted-foreground">
-          {exercise.instructions.substring(0, 100)}
-          {exercise.instructions.length > 100 ? "..." : ""}
+        <p className="text-sm text-muted-foreground line-clamp-3 mb-4">
+          {exercise.instructions || "Yet to add instructions..."}
         </p>
-        <Link
-          href={`/classrooms/${classroomSlug}/${exercise.slug}?id=${exercise.id}`}
-          className="text-primary hover:underline mt-2 inline-block"
-        >
-          View exercise
-        </Link>
+        <div className="flex justify-end">
+          <Link
+            href={`/classrooms/${classroomSlug}/${exercise.slug}?id=${exercise.id}`}
+            className="text-primary hover:underline inline-flex items-center"
+          >
+            Enter Exercise
+            <svg
+              className="ml-1 w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 5l7 7-7 7"
+              />
+            </svg>
+          </Link>
+        </div>
       </CardContent>
     </Card>
   );
