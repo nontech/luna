@@ -1,6 +1,7 @@
 # Imports
 import json
 import os
+from django.utils.text import slugify
 
 # Django
 from django.shortcuts import get_object_or_404, render, redirect
@@ -240,8 +241,21 @@ def update_classroom_by_slug(request, slug):
             }, status=403)
         
         data = request.data
-        classroom.name = data.get('name', classroom.name)
-        classroom.description = data.get('description', classroom.description)
+        
+        # If name is being updated, update the slug as well
+        if 'name' in data:
+            # Check if the name is already taken
+            if Classrooms.objects.filter(name=data['name']).exclude(id=classroom.id).exists():
+                return JsonResponse({
+                    'error': 'A classroom with this name already exists'
+                }, status=400)
+                
+            classroom.name = data['name']
+            classroom.slug = slugify(data['name'])
+            
+        if 'description' in data:
+            classroom.description = data['description']
+            
         classroom.save()
         
         return JsonResponse({
@@ -259,10 +273,11 @@ def update_classroom_by_slug(request, slug):
             'error': 'Classroom not found'
         }, status=404)
     except Exception as e:
-        # Log the error for debugging
-        logger.error(f"Error updating classroom {slug}: {str(e)}")
+        # Enhanced error logging
+        print(f"Error updating classroom {slug}. Error: {str(e)}")
+        print(f"Request data: {request.data}")
         return JsonResponse({
-            'error': 'An unexpected error occurred'
+            'error': str(e)
         }, status=500)
 
 @csrf_exempt
