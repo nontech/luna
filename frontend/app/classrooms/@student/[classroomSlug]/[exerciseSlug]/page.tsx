@@ -2,22 +2,23 @@
 
 import { useParams, useSearchParams } from "next/navigation";
 import { useState, useEffect } from "react";
-import { CodeEditor } from "@/components/CodeEditor";
 import {
-  runPythonCode,
   runPythonCodeWithTests,
   OutputItem,
   setOutputCallback,
-  provideInput,
 } from "@/services/pyodide";
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Loader2 } from "lucide-react";
+import {
+  ActionButtons,
+  ExerciseCodeEditor,
+  OutputDisplay,
+  SubmitModal,
+} from "./components";
 
 interface Exercise {
   id: string;
@@ -41,71 +42,9 @@ interface Submission {
 interface Test {
   id: string;
   name: string;
-  test_type: string;
+  test_type: "includes" | "exact";
   expected_output: string;
   help_text: string;
-}
-
-function OutputDisplay({ items }: { items: OutputItem[] }) {
-  const [inputValues, setInputValues] = useState<
-    Record<string, string>
-  >({});
-
-  const handleInputSubmit = (id: string) => {
-    const value = inputValues[id];
-    if (value !== undefined) {
-      provideInput(id, value);
-      setInputValues((prev) => {
-        const next = { ...prev };
-        delete next[id];
-        return next;
-      });
-    }
-  };
-
-  return (
-    <div className="space-y-2 font-mono text-sm">
-      {items.map((item, index) => (
-        <div key={index} className="space-y-1">
-          {item.type === "output" ? (
-            <pre className="whitespace-pre-wrap break-words">
-              {item.content}
-            </pre>
-          ) : (
-            <div className="flex flex-col space-y-2 bg-gray-100 p-2 rounded">
-              <div>{item.content}</div>
-              <div className="flex space-x-2">
-                <input
-                  type="text"
-                  value={inputValues[item.id!] || ""}
-                  onChange={(e) =>
-                    setInputValues((prev) => ({
-                      ...prev,
-                      [item.id!]: e.target.value,
-                    }))
-                  }
-                  onKeyPress={(e) => {
-                    if (e.key === "Enter") {
-                      handleInputSubmit(item.id!);
-                    }
-                  }}
-                  className="flex-1 px-2 py-1 border rounded"
-                  placeholder="Enter your input..."
-                />
-                <Button
-                  onClick={() => handleInputSubmit(item.id!)}
-                  size="sm"
-                  variant="secondary"
-                >
-                  Submit
-                </Button>
-              </div>
-            </div>
-          )}
-        </div>
-      ))}
-    </div>
-  );
 }
 
 export default function StudentExercisePage() {
@@ -113,7 +52,7 @@ export default function StudentExercisePage() {
   const searchParams = useSearchParams();
   const exerciseId = searchParams.get("id");
 
-  // Exercise data and form states
+  // States
   const [exercise, setExercise] = useState<Exercise | null>(null);
   const [submission, setSubmission] = useState<Submission | null>(
     null
@@ -125,62 +64,37 @@ export default function StudentExercisePage() {
   // Loading states
   const [isSaving, setIsSaving] = useState(false);
   const [isRunning, setIsRunning] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSubmitModal, setShowSubmitModal] = useState(false);
 
-  // Fetch exercise details (name, instructions) and submission if exists
+  // Fetch initial data
   useEffect(() => {
     async function fetchData() {
       if (!exerciseId) return;
 
       try {
-        // Fetch exercise details
-        const exerciseResponse = await fetch(
-          `/api/exercise/${exerciseId}`,
-          {
-            credentials: "include",
-          }
-        );
+        const [exerciseRes, testsRes, submissionRes] =
+          await Promise.all([
+            fetch(`/api/exercise/${exerciseId}`),
+            fetch(`/api/exercise/${exerciseId}/tests`),
+            fetch(`/api/exercise/${exerciseId}/submission`),
+          ]);
 
-        if (!exerciseResponse.ok) {
+        if (!exerciseRes.ok)
           throw new Error("Failed to fetch exercise");
-        }
 
-        const exerciseData = await exerciseResponse.json();
+        const exerciseData = await exerciseRes.json();
         setExercise(exerciseData);
 
-        // Fetch tests for this exercise
-        const testsResponse = await fetch(
-          `/api/exercise/${exerciseId}/tests`
-        );
-        if (testsResponse.ok) {
-          const { tests: testsData } = await testsResponse.json();
+        if (testsRes.ok) {
+          const { tests: testsData } = await testsRes.json();
           setTests(testsData);
         }
 
-        // Fetch submission for this exercise
-        const submissionResponse = await fetch(
-          `/api/exercise/${exerciseId}/submission`,
-          {
-            credentials: "include",
-          }
-        );
-
-        if (submissionResponse.ok) {
-          const submissionData = await submissionResponse.json();
-          if (submissionData) {
-            setSubmission(submissionData);
-            setCode(submissionData.submitted_code || "");
-          } else {
-            // No submission exists yet
-            setSubmission(null);
-            setCode("");
-          }
-        } else {
-          // Handle error
-          console.error(
-            "Error fetching submission:",
-            submissionResponse.statusText
-          );
-          setCode("");
+        if (submissionRes.ok) {
+          const submissionData = await submissionRes.json();
+          setSubmission(submissionData);
+          setCode(submissionData?.submitted_code || "");
         }
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -190,6 +104,7 @@ export default function StudentExercisePage() {
     fetchData();
   }, [exerciseId]);
 
+  // Set up output callback
   useEffect(() => {
     const callback = (item: OutputItem | string) => {
       setOutputItems((prev) => [
@@ -200,55 +115,51 @@ export default function StudentExercisePage() {
       ]);
     };
     setOutputCallback(callback);
-    return () => {
-      setOutputCallback(null);
-    };
+    return () => setOutputCallback(null);
   }, []);
 
   const handleSave = async () => {
     if (isSaving || !exercise) return;
-
     setIsSaving(true);
 
     try {
-      let response;
-
+      // Create new submission if none exists
       if (!submission) {
-        // Create new submission
-        response = await fetch(
+        const response = await fetch(
           `/api/exercise/${exercise.id}/create-submission`,
           {
             method: "POST",
-            credentials: "include",
-            headers: {
-              "Content-Type": "application/json",
-            },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ code }),
           }
         );
-      } else {
-        // Update existing submission
-        response = await fetch(
-          `/api/submission/${submission.id}/update`,
-          {
-            method: "PUT",
-            credentials: "include",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ code }),
-          }
-        );
+
+        if (!response.ok)
+          throw new Error("Failed to create submission");
+        const data = await response.json();
+        setSubmission(data);
+        return;
       }
 
-      if (!response.ok) {
-        throw new Error("Failed to save submission");
-      }
+      // Update existing submission with status assigned_to_student
+      const response = await fetch(
+        `/api/submission/${submission.id}/update`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            code,
+            status: "assigned_to_student",
+          }),
+        }
+      );
 
+      if (!response.ok)
+        throw new Error("Failed to update submission");
       const data = await response.json();
       setSubmission(data);
     } catch (error) {
-      console.error("Error saving submission:", error);
+      console.error("Error saving code:", error);
     } finally {
       setIsSaving(false);
     }
@@ -256,25 +167,12 @@ export default function StudentExercisePage() {
 
   const handleRunCode = async () => {
     if (isRunning || !exercise) return;
-
     setIsRunning(true);
-    setOutputItems([]); // Clear previous output
+    setOutputItems([]);
 
     try {
-      // Fetch tests for this exercise
-      const testsResponse = await fetch(
-        `/api/exercise/${exercise.id}/tests`
-      );
-      if (!testsResponse.ok) {
-        throw new Error("Failed to fetch tests");
-      }
-      const { tests } = await testsResponse.json();
-
-      // Run code with tests
       const result = await runPythonCodeWithTests(code, tests);
-
-      // Only add test results if we have any
-      if (tests && tests.length > 0) {
+      if (tests.length > 0) {
         const testResults = [
           "",
           "Test Results:",
@@ -285,13 +183,9 @@ export default function StudentExercisePage() {
               }${!test.passed ? `\n   Help: ${test.feedback}` : ""}`
           ),
         ].join("\n");
-
         setOutputItems((prev) => [
           ...prev,
-          {
-            type: "output",
-            content: testResults,
-          },
+          { type: "output", content: testResults },
         ]);
       }
     } catch (error) {
@@ -310,30 +204,62 @@ export default function StudentExercisePage() {
     }
   };
 
-  if (!exercise) {
-    return null;
-  }
+  const handleSubmitForReview = async () => {
+    if (!submission || isSubmitting) return;
+    setIsSubmitting(true);
+
+    try {
+      // First save the latest code and update status
+      const response = await fetch(
+        `/api/submission/${submission.id}/update`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            code,
+            status: "submitted_by_student",
+          }),
+        }
+      );
+
+      if (!response.ok)
+        throw new Error("Failed to submit for review");
+
+      const data = await response.json();
+      setSubmission(data);
+      setShowSubmitModal(false);
+    } catch (error) {
+      console.error("Error submitting for review:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (!exercise) return null;
+
+  const isSubmitted = submission?.status === "submitted_by_student";
 
   return (
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">{exercise.name}</h1>
-        <Button
-          onClick={handleSave}
-          disabled={isSaving}
-          variant="default"
-        >
-          {isSaving && (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          )}
-          {isSaving ? "Saving..." : "Save Solution"}
-        </Button>
+        <ActionButtons
+          isSubmitted={isSubmitted}
+          isSaving={isSaving}
+          onSave={handleSave}
+          onSubmitClick={() => setShowSubmitModal(true)}
+        />
       </div>
 
+      <SubmitModal
+        isOpen={showSubmitModal}
+        onClose={() => setShowSubmitModal(false)}
+        onSubmit={handleSubmitForReview}
+        isSubmitting={isSubmitting}
+      />
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Left Column */}
         <div className="space-y-6 order-1 lg:order-1">
-          {/* Instructions Card*/}
           <Card>
             <CardHeader>
               <CardTitle>Instructions</CardTitle>
@@ -345,38 +271,17 @@ export default function StudentExercisePage() {
             </CardContent>
           </Card>
 
-          {/* Code Editor */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>Code Editor</CardTitle>
-              <Button
-                onClick={handleRunCode}
-                disabled={isRunning}
-                size="sm"
-              >
-                {isRunning && (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                )}
-                {isRunning ? "Running..." : "Run Code"}
-              </Button>
-            </CardHeader>
-            <CardContent>
-              <div className="min-h-[1200px]">
-                <CodeEditor
-                  initialCode={code}
-                  onChange={(newCode) => {
-                    setCode(newCode);
-                  }}
-                />
-              </div>
-            </CardContent>
-          </Card>
+          <ExerciseCodeEditor
+            code={code}
+            onChange={setCode}
+            onRun={handleRunCode}
+            isRunning={isRunning}
+            isSubmitted={isSubmitted}
+          />
         </div>
 
-        {/* Right Column */}
         <div className="space-y-6 order-2 lg:order-2">
-          {/* Test Results Card */}
-          <Card className="order-2 lg:order-1">
+          <Card>
             <CardHeader>
               <CardTitle>Tests</CardTitle>
             </CardHeader>
@@ -415,8 +320,7 @@ export default function StudentExercisePage() {
             </CardContent>
           </Card>
 
-          {/* Output Card */}
-          <Card className="order-4 lg:order-2">
+          <Card>
             <CardHeader>
               <CardTitle>Output</CardTitle>
             </CardHeader>

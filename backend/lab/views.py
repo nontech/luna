@@ -996,7 +996,7 @@ def create_submission(request, exercise_id):
             student=request.user,
             exercise=exercise,
             submitted_code=data.get('code', ''),
-            status='submitted_by_student'
+            status='assigned_to_student'
         )
         submission.save()
         
@@ -1042,7 +1042,10 @@ def update_submission(request, submission_id):
         # Update fields
         if 'code' in data:
             submission.submitted_code = data['code']
-            submission.status = 'submitted_by_student'
+        
+        # Only update status if explicitly provided
+        if 'status' in data:
+            submission.status = data['status']
             
         submission.save()
         
