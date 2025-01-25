@@ -282,7 +282,7 @@ export default function TeacherExercisePage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Left Column */}
-        <div className="space-y-6">
+        <div className="space-y-6 order-1 lg:order-1">
           {/* Instructions Card*/}
           <Card>
             <CardHeader>
@@ -298,8 +298,48 @@ export default function TeacherExercisePage() {
             </CardContent>
           </Card>
 
-          {/* Output Card */}
+          {/* Code Editor */}
           <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle>Code Editor</CardTitle>
+              <Button
+                onClick={handleRunCode}
+                disabled={isRunning}
+                size="sm"
+              >
+                {isRunning && (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                )}
+                {isRunning ? "Running..." : "Run Code"}
+              </Button>
+            </CardHeader>
+            <CardContent>
+              <div>
+                <CodeEditor
+                  initialCode={code}
+                  onChange={(newCode) => {
+                    setCode(newCode);
+                  }}
+                />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Right Column */}
+        <div className="space-y-6 order-2 lg:order-2">
+          {/* Test Manager Card */}
+          <Card className="order-2 lg:order-1">
+            <CardHeader>
+              <CardTitle>Tests</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <TestManager exerciseId={exercise.id} />
+            </CardContent>
+          </Card>
+
+          {/* Output Card */}
+          <Card className="order-4 lg:order-2">
             <CardHeader>
               <CardTitle>Output</CardTitle>
             </CardHeader>
@@ -309,45 +349,7 @@ export default function TeacherExercisePage() {
               </div>
             </CardContent>
           </Card>
-
-          {/* Test Manager Card */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Tests</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <TestManager exerciseId={exercise.id} />
-            </CardContent>
-          </Card>
         </div>
-
-        {/* Right Column */}
-        {/* Code Editor */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>Code Editor</CardTitle>
-            <Button
-              onClick={handleRunCode}
-              disabled={isRunning}
-              size="sm"
-            >
-              {isRunning && (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              )}
-              {isRunning ? "Running..." : "Run Code"}
-            </Button>
-          </CardHeader>
-          <CardContent>
-            <div className="h-[600px]">
-              <CodeEditor
-                initialCode={code}
-                onChange={(newCode) => {
-                  setCode(newCode);
-                }}
-              />
-            </div>
-          </CardContent>
-        </Card>
       </div>
     </div>
   );
