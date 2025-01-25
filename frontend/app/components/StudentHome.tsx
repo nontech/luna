@@ -246,7 +246,7 @@ export default function StudentHome() {
             href="/classrooms"
             className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-white bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg shadow-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-300 transform hover:-translate-y-1"
           >
-            <span>My Classrooms</span>
+            <span>All Classrooms</span>
           </Link>
         </div>
       </div>
