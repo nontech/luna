@@ -1,40 +1,40 @@
 import { NextRequest } from "next/server";
 import { fetchFromDjango } from "@/utils/api";
 
-export async function POST(
+export async function GET(
   request: NextRequest,
   { params }: { params: { exerciseId: string } }
 ) {
   try {
     const { exerciseId } = params;
-    const body = await request.json();
 
     const response = await fetchFromDjango(
-      `/exercise/${exerciseId}/submission/create/`,
+      `/exercise/${exerciseId}/submission/`,
       {
-        method: "POST",
+        method: "GET",
         credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(body),
       }
     );
+
+    // If no submission exists, return null (this is a valid state)
+    if (response.status === 404) {
+      return Response.json(null, { status: 200 });
+    }
 
     if (!response.ok) {
       const errorData = await response.json();
       return Response.json(
-        { error: errorData.error || "Failed to create submission" },
+        { error: errorData.error || "Failed to fetch submission" },
         { status: response.status }
       );
     }
 
     const data = await response.json();
-    return Response.json(data, { status: 201 });
+    return Response.json(data);
   } catch (error) {
-    console.error("Error in create submission route:", error);
+    console.error("Error in submission GET route:", error);
     return Response.json(
-      { error: "Failed to create submission" },
+      { error: "Failed to fetch submission" },
       { status: 500 }
     );
   }

@@ -6,11 +6,11 @@ export async function PUT(
   { params }: { params: { exerciseId: string; submissionId: string } }
 ) {
   try {
-    const { exerciseId, submissionId } = params;
+    const { submissionId } = params;
     const body = await request.json();
 
     const response = await fetchFromDjango(
-      `/exercise/${exerciseId}/submission/${submissionId}/update/`,
+      `/submission/${submissionId}/update/`,
       {
         method: "PUT",
         credentials: "include",
@@ -22,19 +22,11 @@ export async function PUT(
     );
 
     if (!response.ok) {
-      if (response.status === 404) {
-        return Response.json(
-          { error: "Submission not found" },
-          { status: 404 }
-        );
-      }
-      if (response.status === 403) {
-        return Response.json(
-          { error: "Not authorized to update this submission" },
-          { status: 403 }
-        );
-      }
-      throw new Error("Failed to update submission");
+      const errorData = await response.json();
+      return Response.json(
+        { error: errorData.error || "Failed to update submission" },
+        { status: response.status }
+      );
     }
 
     const data = await response.json();
