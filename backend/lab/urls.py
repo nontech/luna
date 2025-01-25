@@ -18,6 +18,9 @@ from .views import (
     delete_test_by_id,
     join_classroom,
     leave_classroom,
+    create_submission,
+    update_submission,
+    get_submission_details,
 )
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from django.contrib.auth import views as auth_views
@@ -99,4 +102,9 @@ urlpatterns = [
     path('accounts/', include('django.contrib.auth.urls')),
 
     # path('api/test-cookies/', test_cookies, name='test_cookies'),
+
+    # Submission endpoints
+    path('exercise/<uuid:exercise_id>/submission/', get_submission_details, name='get_submission_details'),
+    path('exercise/<uuid:exercise_id>/submission/create/', create_submission, name='create_submission'),
+    path('submission/<uuid:submission_id>/update/', update_submission, name='update_submission'),
 ]

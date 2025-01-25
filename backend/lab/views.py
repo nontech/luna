@@ -34,7 +34,7 @@ from rest_framework.authentication import SessionAuthentication
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 # Models
-from .models import Classrooms, Exercises, ClassroomExercises, ExerciseTests, Tests, ClassroomUsers
+from .models import Classrooms, Exercises, ClassroomExercises, ExerciseTests, Tests, ClassroomUsers, Submissions
 from django.contrib.auth.models import User
 
 # Auth
@@ -973,6 +973,133 @@ def leave_classroom(request, slug):
         })
         
     except Exception as e:
+        return JsonResponse({
+            'error': str(e)
+        }, status=500)
+
+@csrf_exempt
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def create_submission(request, exercise_id):
+    """
+    Create a new submission for an exercise.
+    """
+    try:
+        # Get the exercise instance
+        exercise = get_object_or_404(Exercises, id=exercise_id)
+        
+        # Parse the JSON data from request body
+        data = request.data
+        
+        # Create submission instance
+        submission = Submissions(
+            student=request.user,
+            exercise=exercise,
+            submitted_code=data.get('code', ''),
+            status='submitted_by_student'
+        )
+        submission.save()
+        
+        # Return the created submission data
+        return JsonResponse({
+            'id': str(submission.id),
+            'student': {
+                'id': submission.student.id,
+                'username': submission.student.username
+            },
+            'exercise_id': str(exercise_id),
+            'status': submission.status,
+            'submitted_code': submission.submitted_code,
+            'created_at': submission.created_at.isoformat(),
+            'updated_at': submission.updated_at.isoformat()
+        }, status=201)
+            
+    except Exception as e:
+        print(f"Error in create_submission: {str(e)}")
+        return JsonResponse({
+            'error': str(e)
+        }, status=500)
+
+@csrf_exempt
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def update_submission(request, submission_id):
+    """
+    Update a submission's details.
+    Only the student who created the submission can update it.
+    """
+    try:
+        submission = get_object_or_404(Submissions, id=submission_id)
+        
+        # Check if user is the owner of the submission
+        if submission.student != request.user:
+            return JsonResponse({
+                'error': 'You do not have permission to update this submission'
+            }, status=403)
+        
+        data = request.data
+        
+        # Update fields
+        if 'code' in data:
+            submission.submitted_code = data['code']
+            submission.status = 'submitted_by_student'
+            
+        submission.save()
+        
+        return JsonResponse({
+            'id': str(submission.id),
+            'student': {
+                'id': submission.student.id,
+                'username': submission.student.username
+            },
+            'exercise_id': str(submission.exercise.id),
+            'status': submission.status,
+            'submitted_code': submission.submitted_code,
+            'created_at': submission.created_at.isoformat(),
+            'updated_at': submission.updated_at.isoformat()
+        })
+        
+    except Exception as e:
+        print(f"Error in update_submission: {str(e)}")
+        return JsonResponse({
+            'error': str(e)
+        }, status=500)
+
+@csrf_exempt
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_submission_details(request, exercise_id):
+    """
+    Get details of a student's submission for a specific exercise.
+    """
+    try:
+        # Get the submission for this exercise and student
+        submission = get_object_or_404(
+            Submissions,
+            exercise_id=exercise_id,
+            student=request.user
+        )
+        
+        return JsonResponse({
+            'id': str(submission.id),
+            'student': {
+                'id': submission.student.id,
+                'username': submission.student.username
+            },
+            'exercise_id': str(submission.exercise.id),
+            'status': submission.status,
+            'submitted_code': submission.submitted_code,
+            'feedback': submission.feedback,
+            'created_at': submission.created_at.isoformat(),
+            'updated_at': submission.updated_at.isoformat()
+        })
+        
+    except Submissions.DoesNotExist:
+        return JsonResponse({
+            'error': 'No submission found'
+        }, status=404)
+    except Exception as e:
+        print(f"Error in get_submission_details: {str(e)}")
         return JsonResponse({
             'error': str(e)
         }, status=500)
