@@ -104,7 +104,11 @@ urlpatterns = [
     # path('api/test-cookies/', test_cookies, name='test_cookies'),
 
     # Submission endpoints
-    path('exercise/<uuid:exercise_id>/submission/', get_submission_details, name='get_submission_details'),
+
+    # Create
     path('exercise/<uuid:exercise_id>/submission/create/', create_submission, name='create_submission'),
+    # Read
+    path('exercise/<uuid:exercise_id>/submission/', get_submission_details, name='get_submission_details'),
+    # Update
     path('submission/<uuid:submission_id>/update/', update_submission, name='update_submission'),
 ]
