@@ -34,7 +34,7 @@ from rest_framework.authentication import SessionAuthentication
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 # Models
-from .models import Classrooms, Exercises, ClassroomExercises, ExerciseTests, Tests
+from .models import Classrooms, Exercises, ClassroomExercises, ExerciseTests, Tests, ClassroomUsers
 from django.contrib.auth.models import User
 
 # Auth
@@ -106,18 +106,28 @@ def get_classrooms_list(request):
         - createdAt
         - updatedAt
         - slug
+        - is_member (whether the current user is a member)
     """
     try:
         classrooms = Classrooms.objects.all()
-        classrooms_data = [{
-            'id': classroom.id,
-            'name': classroom.name,
-            'description': classroom.description,
-            'teacher': classroom.creator_user.username,
-            'createdAt': classroom.created_at.isoformat(),
-            'updatedAt': classroom.updated_at.isoformat(),
-            'slug': classroom.slug,
-        } for classroom in classrooms]
+        classrooms_data = []
+        
+        for classroom in classrooms:
+            is_member = ClassroomUsers.objects.filter(
+                classroom=classroom,
+                user=request.user
+            ).exists()
+            
+            classrooms_data.append({
+                'id': classroom.id,
+                'name': classroom.name,
+                'description': classroom.description,
+                'teacher': classroom.creator_user.username,
+                'createdAt': classroom.created_at.isoformat(),
+                'updatedAt': classroom.updated_at.isoformat(),
+                'slug': classroom.slug,
+                'is_member': is_member
+            })
         
         return JsonResponse({
             'classrooms': classrooms_data
@@ -200,24 +210,36 @@ def create_new_classroom(request):
         }, status=500)
 
 @csrf_exempt
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def get_classroom_details(request, slug):
     try:
         classroom = get_object_or_404(Classrooms, slug=slug)
+        
+        # Check if user is a member (for UI purposes only)
+        is_member = ClassroomUsers.objects.filter(
+            classroom=classroom,
+            user=request.user
+        ).exists()
         
         # Return classroom details as JSON
         classroom_data = {
             'id': classroom.id,
             'name': classroom.name,
             'description': classroom.description,
-            'teacher': classroom.creator_user.full_name,
+            'teacher': classroom.creator_user.username,
             'createdAt': classroom.created_at.isoformat(),
             'updatedAt': classroom.updated_at.isoformat(),
             'slug': classroom.slug,
-            # Add any other fields you need
+            'is_member': is_member
         }
         
         return JsonResponse(classroom_data)
         
+    except Classrooms.DoesNotExist:
+        return JsonResponse({
+            'error': 'Classroom not found'
+        }, status=404)
     except Exception as e:
         return JsonResponse({
             'error': str(e)
@@ -878,6 +900,79 @@ def delete_test_by_id(request, test_id):
         }, status=404)
     except Exception as e:
         print(f"Error in delete_test: {str(e)}")
+        return JsonResponse({
+            'error': str(e)
+        }, status=500)
+
+@csrf_exempt
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def join_classroom(request, slug):
+    """
+    Join a classroom. Creates an entry in ClassroomUsers.
+    """
+    try:
+        classroom = get_object_or_404(Classrooms, slug=slug)
+        
+        # Check if already a member
+        if ClassroomUsers.objects.filter(classroom=classroom, user=request.user).exists():
+            return JsonResponse({
+                'error': 'Already a member of this classroom'
+            }, status=400)
+            
+        # Create classroom membership
+        ClassroomUsers.objects.create(
+            classroom=classroom,
+            user=request.user
+        )
+        
+        return JsonResponse({
+            'message': 'Successfully joined classroom',
+            'classroom': {
+                'id': classroom.id,
+                'name': classroom.name,
+                'slug': classroom.slug
+            }
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'error': str(e)
+        }, status=500)
+
+@csrf_exempt
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def leave_classroom(request, slug):
+    """
+    Leave a classroom. Deletes the entry from ClassroomUsers.
+    """
+    try:
+        classroom = get_object_or_404(Classrooms, slug=slug)
+        
+        # Try to delete the membership
+        membership = ClassroomUsers.objects.filter(
+            classroom=classroom,
+            user=request.user
+        )
+        
+        if not membership.exists():
+            return JsonResponse({
+                'error': 'Not a member of this classroom'
+            }, status=400)
+            
+        membership.delete()
+        
+        return JsonResponse({
+            'message': 'Successfully left classroom',
+            'classroom': {
+                'id': classroom.id,
+                'name': classroom.name,
+                'slug': classroom.slug
+            }
+        })
+        
+    except Exception as e:
         return JsonResponse({
             'error': str(e)
         }, status=500)

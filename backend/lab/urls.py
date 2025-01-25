@@ -16,6 +16,8 @@ from .views import (
     get_test_details,
     update_test_by_id,
     delete_test_by_id,
+    join_classroom,
+    leave_classroom,
 )
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from django.contrib.auth import views as auth_views
@@ -57,6 +59,9 @@ urlpatterns = [
     # Delete
     path('exercise/delete/<uuid:exercise_id>/', delete_exercise_by_id, name='delete_exercise_by_id'),
 
+    # Classroom Membership
+    path('classroom/<slug:slug>/join/', join_classroom, name='join_classroom'),
+    path('classroom/<slug:slug>/leave/', leave_classroom, name='leave_classroom'),
 
     # Test CRUD
 
