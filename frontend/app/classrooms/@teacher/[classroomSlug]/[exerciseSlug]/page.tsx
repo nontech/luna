@@ -268,16 +268,26 @@ export default function TeacherExercisePage() {
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">{exercise.name}</h1>
-        <Button
-          onClick={handleSave}
-          disabled={isSaving}
-          variant="default"
-        >
-          {isSaving && (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          )}
-          {isSaving ? "Saving..." : "Save Exercise"}
-        </Button>
+        <div className="space-x-4">
+          <Button
+            onClick={() =>
+              (window.location.href = `${window.location.pathname}/submissions?id=${exercise.id}`)
+            }
+            variant="secondary"
+          >
+            View Submissions
+          </Button>
+          <Button
+            onClick={handleSave}
+            disabled={isSaving}
+            variant="default"
+          >
+            {isSaving && (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            )}
+            {isSaving ? "Saving..." : "Save Exercise"}
+          </Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

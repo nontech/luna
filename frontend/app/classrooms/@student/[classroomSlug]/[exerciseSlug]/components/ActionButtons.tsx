@@ -6,6 +6,7 @@ interface ActionButtonsProps {
   isSaving: boolean;
   onSave: () => void;
   onSubmitClick: () => void;
+  submissionStatus?: string;
 }
 
 export function ActionButtons({
@@ -13,6 +14,7 @@ export function ActionButtons({
   isSaving,
   onSave,
   onSubmitClick,
+  submissionStatus,
 }: ActionButtonsProps) {
   return (
     <div className="flex gap-2">
@@ -31,6 +33,10 @@ export function ActionButtons({
       {!isSubmitted ? (
         <Button onClick={onSubmitClick} variant="secondary">
           Submit for Review
+        </Button>
+      ) : submissionStatus === "reviewed_by_teacher" ? (
+        <Button disabled variant="secondary">
+          Reviewed by Teacher
         </Button>
       ) : (
         <Button disabled variant="secondary">

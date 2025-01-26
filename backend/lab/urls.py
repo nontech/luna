@@ -21,6 +21,7 @@ from .views import (
     create_submission,
     update_submission,
     get_submission_details,
+    get_all_submissions,
 )
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from django.contrib.auth import views as auth_views
@@ -109,6 +110,7 @@ urlpatterns = [
     path('exercise/<uuid:exercise_id>/submission/create/', create_submission, name='create_submission'),
     # Read
     path('exercise/<uuid:exercise_id>/submission/', get_submission_details, name='get_submission_details'),
+    path('exercise/<uuid:exercise_id>/submissions/', get_all_submissions, name='get_all_submissions'),
     # Update
     path('submission/<uuid:submission_id>/update/', update_submission, name='update_submission'),
 ]

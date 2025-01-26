@@ -35,6 +35,7 @@ interface Submission {
   id: string;
   submitted_code: string;
   status: string;
+  feedback?: string;
   created_at: string;
   updated_at: string;
 }
@@ -237,7 +238,9 @@ export default function StudentExercisePage() {
 
   if (!exercise) return null;
 
-  const isSubmitted = submission?.status === "submitted_by_student";
+  const isSubmitted =
+    submission?.status === "submitted_by_student" ||
+    submission?.status === "reviewed_by_teacher";
 
   return (
     <div className="container mx-auto p-6 space-y-6">
@@ -248,6 +251,7 @@ export default function StudentExercisePage() {
           isSaving={isSaving}
           onSave={handleSave}
           onSubmitClick={() => setShowSubmitModal(true)}
+          submissionStatus={submission?.status}
         />
       </div>
 
@@ -257,6 +261,27 @@ export default function StudentExercisePage() {
         onSubmit={handleSubmitForReview}
         isSubmitting={isSubmitting}
       />
+
+      {submission?.status === "reviewed_by_teacher" && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Teacher's Feedback</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="prose max-w-none">
+              {submission.feedback ? (
+                submission.feedback
+              ) : (
+                <p className="text-muted-foreground">
+                  No specific feedback given by the teacher. This
+                  usually means everything went well. You completed
+                  the exercise successfully.
+                </p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="space-y-6 order-1 lg:order-1">

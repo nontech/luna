@@ -1026,26 +1026,43 @@ def create_submission(request, exercise_id):
 def update_submission(request, submission_id):
     """
     Update a submission's details.
-    Only the student who created the submission can update it.
+    Students can only update their own submissions' code and toggle between assigned_to_student/submitted_by_student statuses.
+    Teachers can update feedback and set status to reviewed_by_teacher.
     """
     try:
         submission = get_object_or_404(Submissions, id=submission_id)
+        data = request.data
         
-        # Check if user is the owner of the submission
-        if submission.student != request.user:
+        # Check permissions
+        is_teacher = request.user.groups.filter(name='Teachers').exists()
+        is_owner = submission.student == request.user
+        
+        if not (is_teacher or is_owner):
             return JsonResponse({
                 'error': 'You do not have permission to update this submission'
             }, status=403)
         
-        data = request.data
+        # Students can update code and toggle between assigned_to_student/submitted_by_student
+        if is_owner and not is_teacher:
+            if 'code' in data:
+                submission.submitted_code = data['code']
+            if 'status' in data:
+                if data['status'] not in ['assigned_to_student', 'submitted_by_student']:
+                    return JsonResponse({
+                        'error': 'Students can only set status to assigned_to_student or submitted_by_student'
+                    }, status=400)
+                submission.status = data['status']
         
-        # Update fields
-        if 'code' in data:
-            submission.submitted_code = data['code']
-        
-        # Only update status if explicitly provided
-        if 'status' in data:
-            submission.status = data['status']
+        # Teachers can update feedback and set status to reviewed_by_teacher
+        if is_teacher:
+            if 'feedback' in data:
+                submission.feedback = data['feedback']
+            if 'status' in data:
+                if data['status'] not in ['reviewed_by_teacher']:
+                    return JsonResponse({
+                        'error': 'Teachers can only set status to reviewed_by_teacher'
+                    }, status=400)
+                submission.status = data['status']
             
         submission.save()
         
@@ -1053,11 +1070,16 @@ def update_submission(request, submission_id):
             'id': str(submission.id),
             'student': {
                 'id': submission.student.id,
-                'username': submission.student.username
+                'username': submission.student.username,
+                'full_name': f"{submission.student.first_name} {submission.student.last_name}".strip(),
+                'email': submission.student.email,
+                'date_joined': submission.student.date_joined.isoformat(),
+                'last_login': submission.student.last_login.isoformat() if submission.student.last_login else None,
             },
             'exercise_id': str(submission.exercise.id),
             'status': submission.status,
             'submitted_code': submission.submitted_code,
+            'feedback': submission.feedback,
             'created_at': submission.created_at.isoformat(),
             'updated_at': submission.updated_at.isoformat()
         })
@@ -1103,6 +1125,60 @@ def get_submission_details(request, exercise_id):
         }, status=404)
     except Exception as e:
         print(f"Error in get_submission_details: {str(e)}")
+        return JsonResponse({
+            'error': str(e)
+        }, status=500)
+
+@csrf_exempt
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_all_submissions(request, exercise_id):
+    """
+    Get all submissions for a specific exercise.
+    Only accessible by teachers.
+    """
+    try:
+        # Check if user is a teacher
+        if not request.user.groups.filter(name='Teachers').exists():
+            return JsonResponse({
+                'error': 'Only teachers can view all submissions'
+            }, status=403)
+            
+        # Get all submissions for this exercise
+        submissions = Submissions.objects.filter(exercise_id=exercise_id).select_related('student')
+        
+        # Debug print
+        for submission in submissions:
+            print(f"Student data - ID: {submission.student.id}, Email: {submission.student.email}, Name: {submission.student.first_name} {submission.student.last_name}")
+        
+        # Extract submission data with detailed student info
+        submissions_data = [{
+            'id': str(submission.id),
+            'student': {
+                'id': submission.student.id,
+                'username': submission.student.username,
+                'full_name': f"{submission.student.first_name} {submission.student.last_name}".strip(),
+                'email': submission.student.email,
+                'date_joined': submission.student.date_joined.isoformat(),
+                'last_login': submission.student.last_login.isoformat() if submission.student.last_login else None,
+            },
+            'exercise_id': str(submission.exercise.id),
+            'status': submission.status,
+            'submitted_code': submission.submitted_code,
+            'feedback': submission.feedback,
+            'created_at': submission.created_at.isoformat(),
+            'updated_at': submission.updated_at.isoformat()
+        } for submission in submissions]
+        
+        # Debug print
+        print("Submissions data:", submissions_data)
+        
+        return JsonResponse({
+            'submissions': submissions_data
+        })
+        
+    except Exception as e:
+        print(f"Error in get_all_submissions: {str(e)}")
         return JsonResponse({
             'error': str(e)
         }, status=500)
