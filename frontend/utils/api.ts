@@ -5,44 +5,43 @@ export async function fetchFromDjango(
   endpoint: string,
   options: RequestInit = {}
 ) {
-  const cookieStore = await cookies();
-  const accessToken = cookieStore.get("access_token");
-
-  if (!accessToken?.value) {
-    return new Response(
-      JSON.stringify({ error: "Not authenticated" }),
-      {
-        status: 401,
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
-  }
-
-  const headers = {
+  const baseHeaders = {
     "Content-Type": "application/json",
     Accept: "application/json",
-    Cookie: `access_token=${accessToken.value}`,
-    ...options.headers,
   };
 
-  const response = await fetch(`${process.env.API_URL}${endpoint}`, {
-    ...options,
-    headers,
-    credentials: "include",
-  });
+  // In server components, get the cookie from the cookie store
+  if (typeof window === "undefined") {
+    try {
+      const cookieStore = await cookies();
+      const accessToken = cookieStore.get("access_token");
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error("Django API Error:", {
-      status: response.status,
-      statusText: response.statusText,
-      body: errorText,
-      endpoint: endpoint,
-    });
-    throw new Error(`API Error: ${response.status} - ${errorText}`);
+      if (!accessToken?.value) {
+        throw new Error("Not authenticated");
+      }
+
+      return fetch(`${process.env.API_URL}${endpoint}`, {
+        ...options,
+        headers: {
+          ...baseHeaders,
+          ...options.headers,
+          Cookie: `access_token=${accessToken.value}`,
+        },
+        credentials: "include",
+      });
+    } catch (error) {
+      console.error("Error handling server-side request:", error);
+      throw error;
+    }
   }
 
-  return response;
+  // Client-side request
+  return fetch(`${process.env.API_URL}${endpoint}`, {
+    ...options,
+    headers: {
+      ...baseHeaders,
+      ...options.headers,
+    },
+    credentials: "include",
+  });
 }
