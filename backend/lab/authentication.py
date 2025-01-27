@@ -2,6 +2,7 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from django.conf import settings
 import logging
+from drf_spectacular.extensions import OpenApiAuthenticationExtension
 
 logger = logging.getLogger(__name__)
 
@@ -28,3 +29,15 @@ class CookieJWTAuthentication(JWTAuthentication):
         except Exception as e:
             logger.error("Authentication error: %s", str(e))
             return None 
+
+class CookieJWTAuthenticationScheme(OpenApiAuthenticationExtension):
+    target_class = 'lab.authentication.CookieJWTAuthentication'
+    name = 'Cookie JWT'
+    
+    def get_security_definition(self, auto_schema):
+        return {
+            'type': 'apiKey',
+            'in': 'cookie',
+            'name': settings.SIMPLE_JWT['AUTH_COOKIE'],
+            'description': 'JWT authentication using cookies'
+        } 

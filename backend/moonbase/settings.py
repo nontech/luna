@@ -287,3 +287,33 @@ LOGGING = {
         }
     },
 }
+
+# Security Settings for Production
+if ENV_TYPE == 'prod':
+    # HTTPS settings
+    SECURE_SSL_REDIRECT = True
+    SECURE_HSTS_SECONDS = 31536000  # 1 year
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    
+    # Cookie settings
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    
+    # Set DEBUG to False in production
+    DEBUG = False
+    
+    # Update JWT cookie settings for production
+    SIMPLE_JWT['AUTH_COOKIE_SECURE'] = True
+    SIMPLE_JWT['AUTH_COOKIE_SAMESITE'] = 'Lax'
+
+# Make sure to generate a strong SECRET_KEY for production
+if ENV_TYPE == 'prod' and (
+    len(SECRET_KEY) < 50 
+    or SECRET_KEY.startswith('django-insecure-')
+    or len(set(SECRET_KEY)) < 5
+):
+    raise ValueError(
+        'Production environment detected with an insecure SECRET_KEY. '
+        'Please set a strong SECRET_KEY in your .env.prod file'
+    )
