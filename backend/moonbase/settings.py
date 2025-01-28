@@ -79,7 +79,6 @@ CSRF_TRUSTED_ORIGINS = [
 # Related CSRF settings
 CSRF_COOKIE_SAMESITE = 'Lax'
 CSRF_COOKIE_HTTPONLY = True
-CSRF_USE_SESSIONS = True
 
 
 # Controls which origins can make CORS requests to your API
@@ -307,7 +306,8 @@ if os.environ.get('COLLECTING_STATIC', '0') != '1':
 
 
 # Update Session settings
-SESSION_COOKIE_SECURE = not ENV_TYPE == 'local'
+SESSION_COOKIE_SECURE = ENV_TYPE == 'prod'
+SESSION_COOKIE_SAMESITE = 'Lax'
 
 # Add these logging settings
 LOGGING = {
