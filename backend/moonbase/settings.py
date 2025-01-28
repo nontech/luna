@@ -14,56 +14,105 @@ from pathlib import Path
 import environ
 import os
 from datetime import timedelta
+import dj_database_url
+import logging
 
 # Initialize environ
-env = environ.Env(
-    DEBUG=(bool, False),
-)
+env = environ.Env()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Environment setup
 VALID_ENV_TYPES = ['local', 'docker', 'prod']
+# Standard Python os.getenv():
 ENV_TYPE = os.getenv('ENV_TYPE', 'local')
 
 if ENV_TYPE not in VALID_ENV_TYPES:
     raise ValueError(f"ENV_TYPE must be one of {VALID_ENV_TYPES}")
 
-# Load environment files based on ENV_TYPE
-if ENV_TYPE == 'local':
-    # For local, only load local settings
-    env_file = BASE_DIR / '.env.local.dev'
-elif ENV_TYPE == 'docker':
-    # For docker, only load docker settings
-    env_file = BASE_DIR / '.env.docker.dev'
-elif ENV_TYPE == 'prod':
-    # For prod, only load prod settings
-    env_file = BASE_DIR / '.env.prod'
+# Load environment files only in non-production environments
+if ENV_TYPE != 'prod':
+    # Load environment files based on ENV_TYPE
+    if ENV_TYPE == 'local':
+        env_file = BASE_DIR / '.env.local.dev'
+    elif ENV_TYPE == 'docker':
+        env_file = BASE_DIR / '.env.docker.dev'
+    
+    # Verify and load the environment file for local development
+    if not env_file.exists():
+        raise FileNotFoundError(
+            f"Required environment file not found: {env_file}\n"
+            f"This file is required for ENV_TYPE={ENV_TYPE}"
+        )
+    
+    # Read the env file
+    environ.Env.read_env(env_file)
 else:
-    raise ValueError(f"Unhandled ENV_TYPE: {ENV_TYPE}")
-
-# Verify and load the environment file
-if not env_file.exists():
-    raise FileNotFoundError(
-        f"Required environment file not found: {env_file}\n"
-        f"This file is required for ENV_TYPE={ENV_TYPE}"
-    )
-
-# Add this line after your env_file validation
-environ.Env.read_env(env_file)
+    # In production, use environment variables directly
+    # No need to load any .env file
+    pass
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
+# Make sure to generate a strong SECRET_KEY for production
 SECRET_KEY = env('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env('DEBUG')
+if ENV_TYPE == 'local':
+    DEBUG = True
+else:
+    DEBUG = False
 
-ALLOWED_HOSTS = env('DJANGO_ALLOWED_HOSTS').split()  # This will split on whitespace
+# Controls which host/domain names Django site can serve
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'luna-backend.railway.app']
 
+
+# Controls which origins can make POST/PUT/DELETE requests with CSRF tokens
+# Important for forms and POST requests from frontend
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:3000",
+    "https://luna-backend.railway.app",
+]
+# Related CSRF settings
+CSRF_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_HTTPONLY = True
+CSRF_USE_SESSIONS = True
+
+
+# Controls which origins can make CORS requests to your API
+CORS_ALLOWED_ORIGINS = [
+    "https://frontend.com",     # Your frontend domain
+    "http://localhost:3000",    # Local frontend development
+]
+CORS_ALLOW_CREDENTIALS = True  # Important for cookies
+CORS_EXPOSE_HEADERS = ['Content-Type', 'X-CSRFToken']
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
+
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
+
+# Redirects
+LOGIN_REDIRECT_URL = 'http://localhost:3000'
+LOGOUT_REDIRECT_URL = 'http://localhost:3000'
 
 # Application definition
 
@@ -101,6 +150,7 @@ SPECTACULAR_SETTINGS = {
 MIDDLEWARE = [
     # 'lab.middleware.RequestLoggingMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -108,34 +158,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-]
-
-# Configure CORS to allow credentials
-CORS_ALLOW_CREDENTIALS = True  # Important for cookies
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-]
-CORS_EXPOSE_HEADERS = ['Content-Type', 'X-CSRFToken']
-CORS_ALLOW_HEADERS = [
-    'accept',
-    'accept-encoding',
-    'authorization',
-    'content-type',
-    'dnt',
-    'origin',
-    'user-agent',
-    'x-csrftoken',
-    'x-requested-with',
-]
-
-# Add these settings if not already present
-CORS_ALLOW_METHODS = [
-    'DELETE',
-    'GET',
-    'OPTIONS',
-    'PATCH',
-    'POST',
-    'PUT',
 ]
 
 # Add this setting to determine if we're in development
@@ -146,7 +168,7 @@ SIMPLE_JWT = {
     # Cookie settings
     'AUTH_COOKIE': 'access_token',
     'AUTH_COOKIE_REFRESH': 'refresh_token',
-    'AUTH_COOKIE_SECURE': False,
+    'AUTH_COOKIE_SECURE': env.bool('AUTH_COOKIE_SECURE', default=True),
     'AUTH_COOKIE_HTTP_ONLY': True,
     'AUTH_COOKIE_SAMESITE': 'Lax',
     'AUTH_COOKIE_PATH': '/',
@@ -160,8 +182,6 @@ SIMPLE_JWT = {
     'USER_ID_CLAIM': 'user_id',
 }
 
-LOGIN_REDIRECT_URL = 'http://localhost:3000'
-LOGOUT_REDIRECT_URL = 'http://localhost:3000'
 
 ROOT_URLCONF = 'moonbase.urls'
 
@@ -198,13 +218,19 @@ DATABASES = {
     }
 }
 
+
+# If prod, use DATABASE_URL from Railway
+# if ENV_TYPE == 'prod':
+#     DATABASES['default'] = dj_database_url.parse(env('DATABASE_URL'))
+
 # Add after your database settings
 print("Current ENV_TYPE:", ENV_TYPE)
-print("Database settings:")
-print(f"NAME: {env('DB_NAME')}")
-print(f"USER: {env('DB_USER')}")
-print(f"HOST: {env('DB_HOST')}")
-print(f"PORT: {env('DB_PORT')}")
+print("DATABASES:", DATABASES)
+# print("Database settings:")
+# print(f"NAME: {env('DB_NAME')}")
+# print(f"USER: {env('DB_USER')}")
+# print(f"HOST: {env('DB_HOST')}")
+# print(f"PORT: {env('DB_PORT')}")
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
@@ -240,7 +266,22 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-STATIC_URL = 'static/'
+# URL prefix for serving static files
+# If STATIC_URL = 'static/', a file at `myapp/static/myapp/image.jpg` will be served at `http://example.com/static/myapp/image.jpg`
+STATIC_URL = '/static/'
+
+# Production-only setting - this is where Whitenoise will serve files from
+# Contains all static files from all apps combined into one directory
+# Where 'python manage.py collectstatic' will gather all static files
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# Additional locations where Django will look for static files
+# For project-level static files (not belonging to any specific app)
+# Your source static files go here or in your app's static directory
+STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
+
+# Add Whitenoise storage for compression (optional but recommended)
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
@@ -253,23 +294,20 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
 ]
 
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# Email settings
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend' if ENV_TYPE == 'prod' else 'django.core.mail.backends.console.EmailBackend'
 RESEND_SMTP_PORT = 587
 RESEND_SMTP_USERNAME = 'resend'
 RESEND_SMTP_HOST = 'smtp.resend.com'
-RESEND_SMTP_PASSWORD = env('RESEND_API_KEY')
+if os.environ.get('COLLECTING_STATIC', '0') != '1':
+    RESEND_SMTP_PASSWORD = env('RESEND_API_KEY', default=None)
+    if RESEND_SMTP_PASSWORD is None and ENV_TYPE == 'prod':
+        EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
-# CSRF settings
-CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:3000",
-]
-CSRF_COOKIE_SAMESITE = 'Lax'
-CSRF_COOKIE_HTTPONLY = True
-CSRF_COOKIE_SECURE = not IS_DEVELOPMENT
-CSRF_USE_SESSIONS = True
+
 
 # Update Session settings
-SESSION_COOKIE_SECURE = not IS_DEVELOPMENT
+SESSION_COOKIE_SECURE = not ENV_TYPE == 'local'
 
 # Add these logging settings
 LOGGING = {
@@ -290,30 +328,6 @@ LOGGING = {
 
 # Security Settings for Production
 if ENV_TYPE == 'prod':
-    # HTTPS settings
-    SECURE_SSL_REDIRECT = True
-    SECURE_HSTS_SECONDS = 31536000  # 1 year
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-    SECURE_HSTS_PRELOAD = True
-    
-    # Cookie settings
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
-    
-    # Set DEBUG to False in production
-    DEBUG = False
-    
     # Update JWT cookie settings for production
     SIMPLE_JWT['AUTH_COOKIE_SECURE'] = True
     SIMPLE_JWT['AUTH_COOKIE_SAMESITE'] = 'Lax'
-
-# Make sure to generate a strong SECRET_KEY for production
-if ENV_TYPE == 'prod' and (
-    len(SECRET_KEY) < 50 
-    or SECRET_KEY.startswith('django-insecure-')
-    or len(set(SECRET_KEY)) < 5
-):
-    raise ValueError(
-        'Production environment detected with an insecure SECRET_KEY. '
-        'Please set a strong SECRET_KEY in your .env.prod file'
-    )
