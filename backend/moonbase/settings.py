@@ -84,7 +84,6 @@ CSRF_USE_SESSIONS = True
 
 # Controls which origins can make CORS requests to your API
 CORS_ALLOWED_ORIGINS = [
-    "https://frontend.com",     # Your frontend domain
     "http://localhost:3000",    # Local frontend development
 ]
 CORS_ALLOW_CREDENTIALS = True  # Important for cookies
@@ -148,7 +147,6 @@ SPECTACULAR_SETTINGS = {
 } 
 
 MIDDLEWARE = [
-    # 'lab.middleware.RequestLoggingMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -268,17 +266,19 @@ USE_TZ = True
 
 # URL prefix for serving static files
 # If STATIC_URL = 'static/', a file at `myapp/static/myapp/image.jpg` will be served at `http://example.com/static/myapp/image.jpg`
-STATIC_URL = '/static/'
+STATIC_URL = 'static/'
 
 # Production-only setting - this is where Whitenoise will serve files from
 # Contains all static files from all apps combined into one directory
 # Where 'python manage.py collectstatic' will gather all static files
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-# Additional locations where Django will look for static files
-# For project-level static files (not belonging to any specific app)
-# Your source static files go here or in your app's static directory
-STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
+# Only use STATICFILES_DIRS in development
+if ENV_TYPE != 'prod':
+    # Additional locations where Django will look for static files
+    # For project-level static files (not belonging to any specific app)
+    # Your source static files go here or in your app's static directory
+    STATICFILES_DIRS = [BASE_DIR / "static"]
 
 # Add Whitenoise storage for compression (optional but recommended)
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
@@ -319,10 +319,14 @@ LOGGING = {
         },
     },
     'loggers': {
-        'lab.authentication': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',
+        },
+        'django.request': {
             'handlers': ['console'],
             'level': 'DEBUG',
-        }
+        },
     },
 }
 
@@ -331,3 +335,12 @@ if ENV_TYPE == 'prod':
     # Update JWT cookie settings for production
     SIMPLE_JWT['AUTH_COOKIE_SECURE'] = True
     SIMPLE_JWT['AUTH_COOKIE_SAMESITE'] = 'Lax'
+    # Security settings
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    SECURE_HSTS_SECONDS = 31536000  # 1 year
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
