@@ -326,6 +326,7 @@ LOGGING = {
         'django.request': {
             'handlers': ['console'],
             'level': 'DEBUG',
+            'propagate': True,
         },
     },
 }
@@ -336,7 +337,9 @@ if ENV_TYPE == 'prod':
     SIMPLE_JWT['AUTH_COOKIE_SECURE'] = True
     SIMPLE_JWT['AUTH_COOKIE_SAMESITE'] = 'Lax'
     # Security settings
-    SECURE_SSL_REDIRECT = True
+    SECURE_SSL_REDIRECT = True # Redirects to HTTPS causes 301
+    # This tells Django to trust the X-Forwarded-Proto header from the proxy
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     SECURE_BROWSER_XSS_FILTER = True
