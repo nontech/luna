@@ -7,7 +7,7 @@ import {
   useEffect,
   useCallback,
 } from "react";
-import { fetchFromDjango } from "@/utils/api";
+import { fetchFromDjangoClient } from "@/utils/clientApi";
 
 interface User {
   email: string;
@@ -42,7 +42,7 @@ export function AuthProvider({
 
   const checkAuth = useCallback(async (): Promise<boolean> => {
     try {
-      const response = await fetchFromDjango("api/user/");
+      const response = await fetchFromDjangoClient("api/user/");
 
       if (response.ok) {
         const userData = await response.json();
@@ -89,13 +89,16 @@ export function AuthProvider({
       formData.append("username", email);
       formData.append("password", password);
 
-      const response = await fetchFromDjango("accounts/login/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-        body: formData,
-      });
+      const response = await fetchFromDjangoClient(
+        "accounts/login/",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+          body: formData,
+        }
+      );
 
       const data = await response.json();
 
@@ -115,7 +118,7 @@ export function AuthProvider({
 
   const logout = async (): Promise<void> => {
     try {
-      const response = await fetchFromDjango("logout/", {
+      const response = await fetchFromDjangoClient("logout/", {
         method: "POST",
         headers: {
           Accept: "application/json",
