@@ -23,12 +23,15 @@ export function middleware(request: NextRequest) {
     pathname.startsWith(route)
   );
 
-  // Check for auth token
-  const authToken = request.cookies.get("access_token");
+  // Check for either access_token or refresh_token
+  const hasAuthToken =
+    request.cookies.has("access_token") ||
+    request.cookies.has("refresh_token") ||
+    request.cookies.has("sessionid"); // Also check for Django session
 
   // Handle API routes
   if (isApiRoute && isProtectedApiRoute) {
-    if (!authToken) {
+    if (!hasAuthToken) {
       return NextResponse.json(
         { error: "Not authenticated" },
         { status: 401 }
@@ -37,7 +40,7 @@ export function middleware(request: NextRequest) {
   }
 
   // Handle page routes
-  if (isProtectedRoute && !authToken) {
+  if (isProtectedRoute && !hasAuthToken) {
     return NextResponse.redirect(new URL("/", request.url));
   }
 
@@ -49,16 +52,10 @@ export function middleware(request: NextRequest) {
   return NextResponse.next();
 }
 
-// Update config to include API routes
+// Make sure matcher includes all paths we want to protect
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - public folder
-     */
-    "/((?!_next/static|_next/image|favicon.ico|public).*)",
+    "/((?!api|_next/static|_next/image|favicon.ico).*)",
+    "/api/:path*",
   ],
 };
