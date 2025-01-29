@@ -96,7 +96,14 @@ CORS_ALLOWED_ORIGINS = [
     FRONTEND_URL,
 ]
 CORS_ALLOW_CREDENTIALS = True  # Important for cookies
-CORS_EXPOSE_HEADERS = ['Content-Type', 'X-CSRFToken']
+
+# Expose necessary headers
+CORS_EXPOSE_HEADERS = [
+    'Content-Type', 
+    'X-CSRFToken'
+]
+
+# Allow necessary headers
 CORS_ALLOW_HEADERS = [
     'accept',
     'accept-encoding',
@@ -175,10 +182,11 @@ SIMPLE_JWT = {
     # Cookie settings
     'AUTH_COOKIE': 'access_token',
     'AUTH_COOKIE_REFRESH': 'refresh_token',
-    'AUTH_COOKIE_SECURE': env.bool('AUTH_COOKIE_SECURE', default=True),
-    'AUTH_COOKIE_HTTP_ONLY': True,
+    'AUTH_COOKIE_SECURE': True if ENV_TYPE == 'prod' else False,  # Only use secure cookies in production
+    'AUTH_COOKIE_HTTP_ONLY': True,  # This is crucial for security
     'AUTH_COOKIE_SAMESITE': 'Lax',
     'AUTH_COOKIE_PATH': '/',
+    'AUTH_COOKIE_DOMAIN': 'luna-backend.up.railway.app' if ENV_TYPE == 'prod' else None,
     
     # Token lifetime
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
@@ -343,17 +351,11 @@ LOGGING = {
 
 # Security Settings for Production
 if ENV_TYPE == 'prod':
-    # Update JWT cookie settings for production
-    SIMPLE_JWT['AUTH_COOKIE_SECURE'] = True
-    SIMPLE_JWT['AUTH_COOKIE_SAMESITE'] = 'Lax'
-    SIMPLE_JWT['AUTH_COOKIE_DOMAIN'] = 'luna-backend.up.railway.app'  # Use full domain instead of subdomain
-    
     # Security settings
-    SECURE_SSL_REDIRECT = True # Redirects to HTTPS causes 301
-    # This tells Django to trust the X-Forwarded-Proto header from the proxy
+    SECURE_SSL_REDIRECT = True
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
+    
+    # Additional security headers
     SECURE_BROWSER_XSS_FILTER = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
     SECURE_HSTS_SECONDS = 31536000  # 1 year

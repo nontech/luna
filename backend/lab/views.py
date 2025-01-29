@@ -536,6 +536,10 @@ def signup(request):
                 
                 # Generate JWT tokens
                 refresh = RefreshToken.for_user(authenticated_user)
+                access_token = str(refresh.access_token)
+                
+                logger.info("Generated access token (first 20 chars): %s...", access_token[:20])
+                logger.info("Redirect URL: %s", settings.LOGIN_REDIRECT_URL)
                 
                 response = HttpResponseRedirect(settings.LOGIN_REDIRECT_URL)
                 
@@ -550,10 +554,9 @@ def signup(request):
                 # Add domain setting in production
                 if settings.ENV_TYPE == 'prod':
                     cookie_settings['domain'] = settings.SIMPLE_JWT['AUTH_COOKIE_DOMAIN']
-                    logger.info("Cookie settings: %s", cookie_settings)
+                    logger.info("Production cookie settings: %s", cookie_settings)
                 
                 # Set access token cookie
-                access_token = str(refresh.access_token)
                 response.set_cookie(
                     'access_token',
                     access_token,
@@ -569,9 +572,9 @@ def signup(request):
                     **cookie_settings
                 )
                 
-                # Log response details
+                # Log final response details
                 logger.info("Response status: %s", response.status_code)
-                logger.info("Response headers: %s", dict(response.items()))
+                logger.info("Set-Cookie headers: %s", response.cookies.output())
                 
                 return response
         else:

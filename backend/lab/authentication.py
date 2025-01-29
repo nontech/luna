@@ -11,14 +11,14 @@ logger = logging.getLogger(__name__)
 
 class CookieJWTAuthentication(JWTAuthentication):
     def authenticate(self, request: Request):
+        logger.info("Request URL: %s", request.get_full_path())
         logger.info("Origin: %s", request.headers.get('Origin'))
         logger.info("Available cookies: %s", list(request.COOKIES.keys()))
-        logger.info("Cookie header: %s", request.headers.get('Cookie'))
         
         raw_token = request.COOKIES.get(settings.SIMPLE_JWT['AUTH_COOKIE'])
         
         if not raw_token:
-            logger.warning("No access_token cookie found")
+            logger.warning("No access_token cookie found. Available cookies: %s", list(request.COOKIES.keys()))
             return None
 
         try:
