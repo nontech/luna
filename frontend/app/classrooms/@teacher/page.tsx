@@ -4,6 +4,7 @@ import React from "react";
 import ClassroomListCard from "./components/ClassroomListCard";
 import CreateClassroomModal from "./components/CreateClassroomModal";
 import { Classroom } from "@/types/classroom";
+import { fetchFromDjangoClient } from "@/utils/clientApi";
 
 export default function TeacherClassroomPage() {
   const [classrooms, setClassrooms] = React.useState<Classroom[]>([]);
@@ -12,18 +13,19 @@ export default function TeacherClassroomPage() {
 
   const fetchClassrooms = React.useCallback(async () => {
     try {
-      const response = await fetch(
-        "/api/classrooms/get-all-classrooms",
-        {
-          credentials: "include",
-        }
-      );
+      // const response = await fetch(
+      //   "/api/classrooms/get-all-classrooms",
+      //   {
+      //     credentials: "include",
+      //   }
+      // );
+      const response = await fetchFromDjangoClient(`classrooms`);
       const data = await response.json();
 
       if (!response.ok) {
         throw new Error(data.error || "Failed to fetch classrooms");
       }
-
+      console.log("[Auth] Successfully authenticated");
       setClassrooms(data.classrooms || []);
       setError(null);
     } catch (error) {

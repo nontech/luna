@@ -9,6 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { GraduationCap } from "lucide-react";
+import { fetchFromDjangoClient } from "@/utils/clientApi";
 
 interface Classroom {
   id: number;
@@ -26,12 +27,20 @@ export default function StudentClassroomPage() {
   const [isLoading, setIsLoading] = React.useState(true);
 
   const fetchClassrooms = async () => {
-    const response = await fetch(
-      "/api/classrooms/get-all-classrooms"
-    );
-    const data = await response.json();
-    setClassrooms(data.classrooms || []);
-    setIsLoading(false);
+    try {
+      // const response = await fetch(
+      //   "/api/classrooms/get-all-classrooms"
+      // );
+      const response = await fetchFromDjangoClient(`classrooms`);
+      console.log("[Auth] Successfully authenticated");
+      const data = await response.json();
+      setClassrooms(data.classrooms || []);
+      setIsLoading(false);
+    } catch (error) {
+      console.error("Error:", error);
+      setClassrooms([]);
+      setIsLoading(false);
+    }
   };
 
   React.useEffect(() => {
