@@ -3,11 +3,13 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { exerciseId: string } }
+  { params }: { params: Promise<{ exerciseId: string }> }
 ) {
   try {
+    const { exerciseId } = await params;
+
     const response = await fetchFromDjango(
-      `/exercise/${params.exerciseId}/tests/`
+      `/exercise/${exerciseId}/tests/`
     );
 
     if (!response.ok) {
@@ -27,13 +29,14 @@ export async function GET(
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { exerciseId: string } }
+  { params }: { params: Promise<{ exerciseId: string }> }
 ) {
   try {
+    const { exerciseId } = await params;
     const body = await request.json();
 
     const response = await fetchFromDjango(
-      `/exercise/${params.exerciseId}/create_new_test/`,
+      `/exercise/${exerciseId}/create_new_test/`,
       {
         method: "POST",
         headers: {

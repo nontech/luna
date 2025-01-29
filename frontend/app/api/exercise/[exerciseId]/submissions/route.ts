@@ -3,10 +3,10 @@ import { fetchFromDjango } from "@/utils/api";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { exerciseId: string } }
+  { params }: { params: Promise<{ exerciseId: string }> }
 ) {
   try {
-    const { exerciseId } = params;
+    const { exerciseId } = await params;
 
     const response = await fetchFromDjango(
       `/exercise/${exerciseId}/submissions/`,
@@ -24,7 +24,6 @@ export async function GET(
     }
 
     const data = await response.json();
-    console.log("Django response:", data); // Debug log
     return Response.json(data);
   } catch (error) {
     console.error("Error in get submissions route:", error);

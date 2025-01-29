@@ -1,12 +1,12 @@
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { fetchFromDjango } from "@/utils/api";
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { exerciseId: string; submissionId: string } }
+  { params }: { params: Promise<{ submissionId: string }> }
 ) {
   try {
-    const { submissionId } = params;
+    const { submissionId } = await params;
     const body = await request.json();
 
     const response = await fetchFromDjango(
@@ -23,17 +23,17 @@ export async function PUT(
 
     if (!response.ok) {
       const errorData = await response.json();
-      return Response.json(
+      return NextResponse.json(
         { error: errorData.error || "Failed to update submission" },
         { status: response.status }
       );
     }
 
     const data = await response.json();
-    return Response.json(data);
+    return NextResponse.json(data);
   } catch (error) {
     console.error("Error in update submission route:", error);
-    return Response.json(
+    return NextResponse.json(
       { error: "Failed to update submission" },
       { status: 500 }
     );

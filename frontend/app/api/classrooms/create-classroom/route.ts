@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { fetchFromDjango } from "@/utils/api";
 
 interface CreateClassroomRequest {
@@ -6,7 +6,7 @@ interface CreateClassroomRequest {
   description?: string;
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
     const body: CreateClassroomRequest = await request.json();
 

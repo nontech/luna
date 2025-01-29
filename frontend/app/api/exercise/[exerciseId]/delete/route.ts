@@ -3,12 +3,10 @@ import { NextResponse } from "next/server";
 
 export async function DELETE(
   request: Request,
-  {
-    params,
-  }: { params: { classroomSlug: string; exerciseId: string } }
+  { params }: { params: Promise<{ exerciseId: string }> }
 ) {
   try {
-    const { exerciseId } = params;
+    const { exerciseId } = await params;
     const response = await fetchFromDjango(
       `/exercise/delete/${exerciseId}/`,
       {

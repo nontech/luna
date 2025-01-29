@@ -1,12 +1,12 @@
 import { fetchFromDjango } from "@/utils/api";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(
-  request: Request,
-  { params }: { params: { classroomSlug: string } }
+  request: NextRequest,
+  { params }: { params: Promise<{ classroomSlug: string }> }
 ) {
   try {
-    const { classroomSlug } = params;
+    const { classroomSlug } = await params;
     const body = await request.json();
 
     const response = await fetchFromDjango(

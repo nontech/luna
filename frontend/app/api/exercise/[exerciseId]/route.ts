@@ -1,12 +1,12 @@
 import { fetchFromDjango } from "@/utils/api";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
-  request: Request,
-  { params }: { params: { exerciseId: string } }
-) {
+  request: NextRequest,
+  { params }: { params: Promise<{ exerciseId: string }> }
+): Promise<Response> {
   try {
-    const exerciseId = params.exerciseId;
+    const { exerciseId } = await params;
     console.log(
       "Nextjs Backend API called with exerciseId:",
       exerciseId
@@ -35,15 +35,18 @@ export async function GET(
     const data = await response.json();
     console.log("Successfully fetched exercise data");
     return NextResponse.json(data);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Detailed error in exercise API route:", {
-      name: error.name,
-      message: error.message,
-      stack: error.stack,
+      name: error instanceof Error ? error.name : "Unknown",
+      message: error instanceof Error ? error.message : "Unknown",
+      stack: error instanceof Error ? error.stack : "Unknown",
     });
 
     return NextResponse.json(
-      { error: "Failed to fetch exercise", details: error.message },
+      {
+        error: "Failed to fetch exercise",
+        details: error instanceof Error ? error.message : "Unknown",
+      },
       { status: 500 }
     );
   }

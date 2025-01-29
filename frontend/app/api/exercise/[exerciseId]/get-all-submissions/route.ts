@@ -3,10 +3,10 @@ import { fetchFromDjango } from "@/utils/api";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { exerciseId: string } }
+  { params }: { params: Promise<{ exerciseId: string }> }
 ) {
   try {
-    const { exerciseId } = params;
+    const { exerciseId } = await params;
 
     const response = await fetchFromDjango(
       `/exercise/${exerciseId}/submissions/`,

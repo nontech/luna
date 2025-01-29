@@ -1,14 +1,12 @@
 import { fetchFromDjango } from "@/utils/api";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function PUT(
-  request: Request,
-  {
-    params,
-  }: { params: { classroomSlug: string; exerciseId: string } }
+  request: NextRequest,
+  { params }: { params: Promise<{ exerciseId: string }> }
 ) {
   try {
-    const { exerciseId } = params;
+    const { exerciseId } = await params;
     const body = await request.json();
 
     const response = await fetchFromDjango(
@@ -23,9 +21,9 @@ export async function PUT(
     );
 
     if (!response.ok) {
-      const error = await response.json();
+      const errorData = await response.json();
       return NextResponse.json(
-        { error: error.message || "Failed to update exercise" },
+        { error: errorData.error || "Failed to update exercise" },
         { status: response.status }
       );
     }

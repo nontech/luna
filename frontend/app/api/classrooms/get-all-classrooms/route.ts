@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { fetchFromDjango } from "@/utils/api";
 
-// Define the interface for classroom data
-interface Classroom {
+// Export the interface so it can be used by consumers
+export interface Classroom {
   id: number;
   name: string;
   description: string;
@@ -10,10 +10,6 @@ interface Classroom {
   createdAt: string;
   updatedAt: string;
   slug: string;
-}
-
-interface ClassroomsResponse {
-  classrooms: Classroom[];
 }
 
 export async function GET() {

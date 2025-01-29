@@ -3,10 +3,10 @@ import { fetchFromDjango } from "@/utils/api";
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { exerciseId: string } }
+  { params }: { params: Promise<{ exerciseId: string }> }
 ) {
   try {
-    const { exerciseId } = params;
+    const { exerciseId } = await params;
     const body = await request.json();
 
     const response = await fetchFromDjango(

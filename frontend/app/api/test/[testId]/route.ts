@@ -3,10 +3,11 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { testId: string } }
+  { params }: { params: Promise<{ testId: string }> }
 ) {
   try {
-    const response = await fetchFromDjango(`/test/${params.testId}/`);
+    const { testId } = await params;
+    const response = await fetchFromDjango(`/test/${testId}/`);
 
     if (!response.ok) {
       throw new Error("Failed to fetch test details");
@@ -25,13 +26,14 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { testId: string } }
+  { params }: { params: Promise<{ testId: string }> }
 ) {
   try {
+    const { testId } = await params;
     const body = await request.json();
 
     const response = await fetchFromDjango(
-      `/test/update/${params.testId}/`,
+      `/test/${testId}/update/`,
       {
         method: "PUT",
         headers: {
@@ -42,8 +44,7 @@ export async function PUT(
     );
 
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || "Failed to update test");
+      throw new Error("Failed to update test");
     }
 
     const data = await response.json();
@@ -51,12 +52,7 @@ export async function PUT(
   } catch (error) {
     console.error("Error updating test:", error);
     return NextResponse.json(
-      {
-        error:
-          error instanceof Error
-            ? error.message
-            : "Failed to update test",
-      },
+      { error: "Failed to update test" },
       { status: 500 }
     );
   }
@@ -64,32 +60,28 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { testId: string } }
+  { params }: { params: Promise<{ testId: string }> }
 ) {
   try {
+    const { testId } = await params;
     const response = await fetchFromDjango(
-      `/test/delete/${params.testId}/`,
+      `/test/${testId}/delete/`,
       {
         method: "DELETE",
       }
     );
 
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || "Failed to delete test");
+      throw new Error("Failed to delete test");
     }
 
-    const data = await response.json();
-    return NextResponse.json(data);
+    return NextResponse.json({
+      message: "Test deleted successfully",
+    });
   } catch (error) {
     console.error("Error deleting test:", error);
     return NextResponse.json(
-      {
-        error:
-          error instanceof Error
-            ? error.message
-            : "Failed to delete test",
-      },
+      { error: "Failed to delete test" },
       { status: 500 }
     );
   }

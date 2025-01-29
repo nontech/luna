@@ -8,9 +8,10 @@ interface UpdateClassroomRequest {
 
 export async function PUT(
   request: Request,
-  { params }: { params: { classroomSlug: string } }
+  { params }: { params: Promise<{ classroomSlug: string }> }
 ) {
   try {
+    const { classroomSlug } = await params;
     const body: UpdateClassroomRequest = await request.json();
 
     // Validate request body
@@ -20,7 +21,6 @@ export async function PUT(
         { status: 400 }
       );
     }
-    const classroomSlug = await params.classroomSlug;
 
     // Make request to Django backend
     const response = await fetchFromDjango(
