@@ -2,6 +2,7 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from django.conf import settings
 from django.http import HttpRequest
+from rest_framework.request import Request
 from rest_framework import HTTP_HEADER_ENCODING
 import logging
 from drf_spectacular.extensions import OpenApiAuthenticationExtension
@@ -9,9 +10,10 @@ from drf_spectacular.extensions import OpenApiAuthenticationExtension
 logger = logging.getLogger(__name__)
 
 class CookieJWTAuthentication(JWTAuthentication):
-    def authenticate(self, request: HttpRequest):
-        logger.info("Request from origin: %s", request.headers.get('Origin'))
-        logger.info("Cookies: %s", request.COOKIES.keys())
+    def authenticate(self, request: Request):
+        logger.info("Origin: %s", request.headers.get('Origin'))
+        logger.info("Available cookies: %s", list(request.COOKIES.keys()))
+        logger.info("Cookie header: %s", request.headers.get('Cookie'))
         
         raw_token = request.COOKIES.get(settings.SIMPLE_JWT['AUTH_COOKIE'])
         

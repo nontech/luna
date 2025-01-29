@@ -12,6 +12,7 @@ from django.urls import reverse
 # Settings
 from django.conf import settings
 
+# Initialize logger
 logger = logging.getLogger(__name__)
 
 # Views
@@ -549,7 +550,7 @@ def signup(request):
                 # Add domain setting in production
                 if settings.ENV_TYPE == 'prod':
                     cookie_settings['domain'] = settings.SIMPLE_JWT['AUTH_COOKIE_DOMAIN']
-                    logger.info("Setting cookie for domain: %s", cookie_settings['domain'])
+                    logger.info("Cookie settings: %s", cookie_settings)
                 
                 # Set access token cookie
                 access_token = str(refresh.access_token)
@@ -567,6 +568,10 @@ def signup(request):
                     max_age=86400,
                     **cookie_settings
                 )
+                
+                # Log response details
+                logger.info("Response status: %s", response.status_code)
+                logger.info("Response headers: %s", dict(response.items()))
                 
                 return response
         else:

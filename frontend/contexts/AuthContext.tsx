@@ -42,18 +42,25 @@ export function AuthProvider({
 
   const checkAuth = useCallback(async (): Promise<boolean> => {
     try {
+      console.log("[Auth] Checking authentication status");
+
       const response = await fetchFromDjangoClient("api/user/");
 
       if (response.ok) {
         const userData = await response.json();
+        console.log("[Auth] Successfully authenticated");
         setUser(userData);
         return true;
       } else {
+        console.log(
+          "[Auth] Not authenticated - Status:",
+          response.status
+        );
         setUser(null);
         return false;
       }
     } catch (error) {
-      console.error("Error checking authentication:", error);
+      console.error("[Auth] Error checking authentication:", error);
       setUser(null);
       return false;
     } finally {
