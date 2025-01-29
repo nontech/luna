@@ -346,6 +346,8 @@ if ENV_TYPE == 'prod':
     # Update JWT cookie settings for production
     SIMPLE_JWT['AUTH_COOKIE_SECURE'] = True
     SIMPLE_JWT['AUTH_COOKIE_SAMESITE'] = 'Lax'
+    SIMPLE_JWT['AUTH_COOKIE_DOMAIN'] = '.railway.app'  # Allow cookies for railway.app and subdomains
+    
     # Security settings
     SECURE_SSL_REDIRECT = True # Redirects to HTTPS causes 301
     # This tells Django to trust the X-Forwarded-Proto header from the proxy

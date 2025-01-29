@@ -539,9 +539,13 @@ def signup(request):
                 cookie_settings = {
                     'httponly': True,
                     'secure': settings.SIMPLE_JWT['AUTH_COOKIE_SECURE'],
-                    'samesite': 'Lax',
+                    'samesite': settings.SIMPLE_JWT['AUTH_COOKIE_SAMESITE'],
                     'path': '/',
                 }
+                
+                # Add domain setting in production
+                if settings.ENV_TYPE == 'prod':
+                    cookie_settings['domain'] = settings.SIMPLE_JWT['AUTH_COOKIE_DOMAIN']
                 
                 response.set_cookie(
                     'access_token',
@@ -656,15 +660,24 @@ def login_view(request):
                     'redirect_url': settings.LOGIN_REDIRECT_URL
                 })
                 
+                # Set cookie settings
+                cookie_settings = {
+                    'httponly': True,
+                    'secure': settings.SIMPLE_JWT['AUTH_COOKIE_SECURE'],
+                    'samesite': settings.SIMPLE_JWT['AUTH_COOKIE_SAMESITE'],
+                    'path': '/',
+                    'max_age': 3600  # 1 hour
+                }
+                
+                # Add domain setting in production
+                if settings.ENV_TYPE == 'prod':
+                    cookie_settings['domain'] = settings.SIMPLE_JWT['AUTH_COOKIE_DOMAIN']
+                
                 # Set JWT token in HTTP-only cookie
                 response.set_cookie(
                     'access_token',
                     str(refresh.access_token),
-                    httponly=True,
-                    secure=settings.SIMPLE_JWT['AUTH_COOKIE_SECURE'],
-                    samesite='Lax',
-                    path='/',
-                    max_age=3600  # 1 hour
+                    **cookie_settings
                 )
                 
                 return response
