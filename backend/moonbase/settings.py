@@ -111,8 +111,8 @@ CORS_ALLOW_METHODS = [
 ]
 
 # Redirects
-LOGIN_REDIRECT_URL = 'http://localhost:3000'
-LOGOUT_REDIRECT_URL = 'http://localhost:3000'
+LOGIN_REDIRECT_URL = 'https://luna-frontend-blush.vercel.app'
+LOGOUT_REDIRECT_URL = 'https://luna-frontend-blush.vercel.app'
 
 # Application definition
 
