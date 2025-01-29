@@ -13,7 +13,12 @@ export async function fetchFromDjango(
   try {
     // Get cookies from the server-side cookie store
     const cookieStore = await cookies();
-    const accessToken = cookieStore.get("access_token");
+
+    // Get all cookies and format them
+    const cookieHeader = cookieStore
+      .getAll()
+      .map((cookie) => `${cookie.name}=${cookie.value}`)
+      .join("; ");
 
     // Remove trailing slash if present, but keep the leading slash
     const normalizedEndpoint = endpoint.endsWith("/")
@@ -27,6 +32,7 @@ export async function fetchFromDjango(
     const url = `${baseUrl}${normalizedEndpoint}`;
 
     console.log("[API Request URL]:", url);
+    console.log("[API Request Cookies]:", cookieHeader);
 
     // Make the request to Django with cookies
     const response = await fetch(url, {
@@ -34,9 +40,7 @@ export async function fetchFromDjango(
       headers: {
         ...baseHeaders,
         ...options.headers,
-        Cookie: accessToken
-          ? `access_token=${accessToken.value}`
-          : "",
+        Cookie: cookieHeader, // Forward all cookies
       },
       credentials: "include",
     });
