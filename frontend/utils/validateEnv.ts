@@ -1,4 +1,4 @@
-const requiredEnvs = ["API_URL", "NEXT_PUBLIC_APP_URL"] as const;
+const requiredEnvs = ["API_URL", "APP_URL"] as const;
 
 export function validateEnv() {
   const missingEnvs = requiredEnvs.filter((env) => !process.env[env]);

@@ -2,6 +2,19 @@
 
 import { useEffect, useRef } from "react";
 
+interface CodeMirrorEditor {
+  setValue: (value: string) => void;
+  getValue: () => string;
+  setOption: (option: string, value: unknown) => void;
+  getCursor: () => { line: number; ch: number };
+  setCursor: (cursor: { line: number; ch: number }) => void;
+  getWrapperElement: () => HTMLElement;
+  on: (
+    event: string,
+    handler: (instance: CodeMirrorEditor) => void
+  ) => void;
+}
+
 interface CodeEditorProps {
   initialCode: string;
   onChange?: (code: string) => void;
@@ -10,7 +23,17 @@ interface CodeEditorProps {
 
 declare global {
   interface Window {
-    CodeMirror: any;
+    CodeMirror: (
+      element: HTMLElement,
+      options: {
+        value: string;
+        mode: string;
+        theme: string;
+        lineNumbers: boolean;
+        readOnly: boolean;
+        viewportMargin: number;
+      }
+    ) => CodeMirrorEditor;
   }
 }
 
@@ -19,7 +42,7 @@ export function CodeEditor({
   onChange,
   readOnly = false,
 }: CodeEditorProps) {
-  const editorRef = useRef<any>(null);
+  const editorRef = useRef<CodeMirrorEditor | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Initialize editor
@@ -35,7 +58,7 @@ export function CodeEditor({
       viewportMargin: Infinity,
     });
 
-    editor.on("change", (instance: any) => {
+    editor.on("change", (instance) => {
       if (onChange) {
         onChange(instance.getValue());
       }
@@ -50,7 +73,7 @@ export function CodeEditor({
         editorRef.current = null;
       }
     };
-  }, []); // Empty deps array since this should only run once on mount
+  }, [initialCode, onChange, readOnly]);
 
   // Handle readOnly changes
   useEffect(() => {

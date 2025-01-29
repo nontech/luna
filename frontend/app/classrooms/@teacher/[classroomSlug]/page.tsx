@@ -7,10 +7,6 @@ import CreateExerciseModal from "./components/CreateExerciseModal";
 import { useEffect, useCallback, Suspense, useState } from "react";
 import { useParams } from "next/navigation";
 
-interface PageProps {
-  params: { classroomSlug: string };
-}
-
 function ExerciseListWrapper({
   classroomSlug,
 }: {
@@ -34,7 +30,6 @@ function ExerciseListWrapper({
       const data = await response.json();
       setExercises(data.exercises || []);
     } catch (error) {
-      console.log("Error:", error);
       setExercises([]); // Clear exercises on error
       throw error; // This will trigger the error boundary
     }
@@ -57,7 +52,7 @@ function ExerciseListWrapper({
   );
 }
 
-export default function ClassroomPage({ params }: PageProps) {
+export default function TeacherClassroomPage() {
   const params2 = useParams();
   const classroomSlug = params2.classroomSlug as string;
 

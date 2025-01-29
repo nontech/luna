@@ -58,10 +58,10 @@ export default function TeacherClassroomPage() {
       ) : classrooms.length === 0 ? (
         <div className="text-center py-8">
           <p className="text-gray-500">
-            You haven't created any classrooms yet.
+            You haven&apos;t created any classrooms yet.
           </p>
           <p className="text-gray-500">
-            Click the "Create Classroom" button to get started.
+            Click &quot;Create Classroom&quot; to get started!
           </p>
         </div>
       ) : (

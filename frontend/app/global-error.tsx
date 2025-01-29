@@ -2,17 +2,20 @@
 
 export default function GlobalError({
   error,
-  reset,
 }: {
   error: Error & { digest?: string };
-  reset: () => void;
 }) {
   return (
-    // global-error must include html and body tags
     <html>
       <body>
-        <h2>Something went wrong!</h2>
-        <button onClick={() => reset()}>Try again</button>
+        <div className="flex min-h-screen items-center justify-center">
+          <div className="text-center">
+            <h1 className="text-4xl font-bold text-red-600">
+              Something went wrong!
+            </h1>
+            <p className="mt-2 text-gray-600">{error.message}</p>
+          </div>
+        </div>
       </body>
     </html>
   );

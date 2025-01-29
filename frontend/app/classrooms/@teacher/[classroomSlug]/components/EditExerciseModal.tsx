@@ -13,7 +13,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { useRouter } from "next/navigation";
 import { Exercise } from "@/types/exercise";
 
 interface EditExerciseModalProps {
@@ -21,6 +20,7 @@ interface EditExerciseModalProps {
   classroomSlug: string;
   isOpen: boolean;
   onClose: () => void;
+  onExerciseUpdated: (updatedExercise: Exercise) => void;
 }
 
 export default function EditExerciseModal({
@@ -28,6 +28,7 @@ export default function EditExerciseModal({
   classroomSlug,
   isOpen,
   onClose,
+  onExerciseUpdated,
 }: EditExerciseModalProps) {
   const [formData, setFormData] = useState({
     name: exercise.name,
@@ -37,7 +38,6 @@ export default function EditExerciseModal({
   const [isUpdating, setIsUpdating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
-  const router = useRouter();
 
   const handleUpdate = async () => {
     setIsUpdating(true);
@@ -51,28 +51,34 @@ export default function EditExerciseModal({
           headers: {
             "Content-Type": "application/json",
           },
-          credentials: "include",
-          body: JSON.stringify(formData),
+          body: JSON.stringify({
+            name: formData.name,
+            instructions: formData.instructions,
+            code: formData.code,
+            classroomSlug,
+          }),
         }
       );
 
+      const data = await response.json();
+
       if (!response.ok) {
-        throw new Error("Failed to update exercise");
+        throw new Error(data.error || "Failed to update exercise");
       }
 
-      const data = await response.json();
       setIsSuccess(true);
+      onExerciseUpdated(data);
 
-      // Close modal and refresh data after successful update
       setTimeout(() => {
         onClose();
-        router.refresh();
+        setIsSuccess(false);
       }, 1500);
     } catch (error) {
+      console.error("Error updating exercise:", error);
       setError(
         error instanceof Error
           ? error.message
-          : "Failed to update exercise"
+          : "An unexpected error occurred"
       );
     } finally {
       setIsUpdating(false);

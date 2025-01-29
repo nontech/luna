@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import CreateTestModal from "./CreateTestModal";
 
@@ -15,7 +15,7 @@ interface Test {
 export function TestManager({ exerciseId }: { exerciseId: string }) {
   const [tests, setTests] = useState<Test[]>([]);
 
-  const fetchTests = async () => {
+  const fetchTests = useCallback(async () => {
     try {
       const response = await fetch(
         `/api/exercise/${exerciseId}/tests`
@@ -27,11 +27,11 @@ export function TestManager({ exerciseId }: { exerciseId: string }) {
     } catch (error) {
       console.error("Error fetching tests:", error);
     }
-  };
+  }, [exerciseId]);
 
   useEffect(() => {
     fetchTests();
-  }, [exerciseId]);
+  }, [fetchTests]);
 
   return (
     <div>
@@ -96,7 +96,8 @@ export function TestManager({ exerciseId }: { exerciseId: string }) {
         ))}
         {tests.length === 0 && (
           <div className="text-center py-8 text-gray-500">
-            No tests created yet. Click "Create Test" to add one.
+            No tests created yet. Click &quot;Create Test&quot; to add
+            one.
           </div>
         )}
       </div>

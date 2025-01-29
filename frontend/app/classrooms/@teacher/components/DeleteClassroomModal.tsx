@@ -18,6 +18,7 @@ interface DeleteClassroomModalProps {
   isOpen: boolean;
   onClose: () => void;
   onClassroomUpdate: () => Promise<void>;
+  onClassroomDeleted?: () => void;
 }
 
 export default function DeleteClassroomModal({
@@ -25,6 +26,7 @@ export default function DeleteClassroomModal({
   isOpen,
   onClose,
   onClassroomUpdate,
+  onClassroomDeleted,
 }: DeleteClassroomModalProps) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -44,25 +46,22 @@ export default function DeleteClassroomModal({
         }
       );
 
-      const data = await response.json();
-
       if (!response.ok) {
-        throw new Error(data.error || "Failed to delete classroom");
+        throw new Error("Failed to delete classroom");
       }
 
       setIsSuccess(true);
-
-      // Close modal and refresh data after successful deletion
       setTimeout(() => {
         onClose();
         onClassroomUpdate();
+        router.push("/classrooms");
+        onClassroomDeleted?.();
       }, 1500);
     } catch (error) {
-      console.error("Delete error:", error);
       setError(
         error instanceof Error
           ? error.message
-          : "Failed to delete classroom"
+          : "An unexpected error occurred"
       );
     } finally {
       setIsDeleting(false);

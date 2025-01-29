@@ -28,9 +28,9 @@ export function SubmitModal({
         <DialogHeader>
           <DialogTitle>Submit Exercise for Review</DialogTitle>
           <DialogDescription>
-            If you submit your solution, you won't be able to edit
-            your code in code editor or make any further changes. You
-            can still run the code.
+            If you submit your solution, you won&apos;t be able to
+            edit your code in code editor or make any further changes.
+            You can still run the code.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>

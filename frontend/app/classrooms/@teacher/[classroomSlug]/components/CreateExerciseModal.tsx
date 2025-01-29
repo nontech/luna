@@ -96,7 +96,7 @@ export default function CreateExerciseModal({
           <DialogTitle>Create a New Exercise</DialogTitle>
           <DialogDescription>
             Enter details for your new exercise. Click create when
-            you're done.
+            you&apos;re done.
           </DialogDescription>
         </DialogHeader>
         {!isSuccess ? (

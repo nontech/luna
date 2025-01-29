@@ -99,7 +99,7 @@ export default function CreateTestModal({
           <DialogTitle>Create a New Test</DialogTitle>
           <DialogDescription>
             Create a test to verify student submissions. Click create
-            when you're done.
+            when you&apos;re done.
           </DialogDescription>
         </DialogHeader>
         {!isSuccess ? (

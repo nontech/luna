@@ -1,8 +1,7 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/use-toast";
 import { Toaster } from "@/components/ui/toaster";
 import {
@@ -32,14 +31,11 @@ interface ClassroomContentProps {
 export function ClassroomContent({
   classroomSlug,
 }: ClassroomContentProps) {
-  const router = useRouter();
   const { toast } = useToast();
-  const [classroom, setClassroom] = React.useState<Classroom | null>(
-    null
-  );
-  const [exercises, setExercises] = React.useState<Exercise[]>([]);
-  const [isLoading, setIsLoading] = React.useState(true);
-  const [isActionLoading, setIsActionLoading] = React.useState(false);
+  const [classroom, setClassroom] = useState<Classroom | null>(null);
+  const [exercises, setExercises] = useState<Exercise[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isActionLoading, setIsActionLoading] = useState(false);
 
   const fetchClassroom = React.useCallback(async () => {
     try {
@@ -92,7 +88,7 @@ export function ClassroomContent({
     }
   }, [classroomSlug]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     fetchClassroom();
     fetchExercises();
   }, [fetchClassroom, fetchExercises]);

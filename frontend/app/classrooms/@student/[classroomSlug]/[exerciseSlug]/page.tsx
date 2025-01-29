@@ -1,6 +1,6 @@
 "use client";
 
-import { useParams, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import {
   runPythonCodeWithTests,
@@ -49,7 +49,6 @@ interface Test {
 }
 
 export default function StudentExercisePage() {
-  const params = useParams();
   const searchParams = useSearchParams();
   const exerciseId = searchParams.get("id");
 
@@ -265,7 +264,7 @@ export default function StudentExercisePage() {
       {submission?.status === "reviewed_by_teacher" && (
         <Card>
           <CardHeader>
-            <CardTitle>Teacher's Feedback</CardTitle>
+            <CardTitle>Teacher&apos;s Feedback</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="prose max-w-none">

@@ -1,10 +1,9 @@
 "use client";
 
-import { useParams, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import { CodeEditor } from "@/components/CodeEditor";
 import {
-  runPythonCode,
   runPythonCodeWithTests,
   OutputItem,
   setOutputCallback,
@@ -105,41 +104,51 @@ function OutputDisplay({ items }: { items: OutputItem[] }) {
 }
 
 export default function TeacherExercisePage() {
-  const params = useParams();
   const searchParams = useSearchParams();
   const exerciseId = searchParams.get("id");
 
   // Exercise data and form states
   const [exercise, setExercise] = useState<Exercise | null>(null);
   const [instructions, setInstructions] = useState("");
-  const [output, setOutput] = useState("");
   const [code, setCode] = useState("");
   const [outputItems, setOutputItems] = useState<OutputItem[]>([]);
 
   // Loading states
   const [isSaving, setIsSaving] = useState(false);
   const [isRunning, setIsRunning] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function getExerciseDetails() {
       if (!exerciseId) return;
+      setIsLoading(true);
+      setError(null);
 
-      const response = await fetch(`/api/exercise/${exerciseId}`, {
-        credentials: "include",
-      });
+      try {
+        const response = await fetch(`/api/exercise/${exerciseId}`, {
+          credentials: "include",
+        });
 
-      if (!response.ok) {
-        throw new Error(
-          response.status === 404
-            ? "Exercise not found"
-            : "Failed to fetch exercise"
+        if (!response.ok) {
+          throw new Error(
+            response.status === 404
+              ? "Exercise not found"
+              : "Failed to fetch exercise"
+          );
+        }
+
+        const data = await response.json();
+        setExercise(data);
+        setInstructions(data.instructions);
+        setCode(data.code);
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : "An error occurred"
         );
+      } finally {
+        setIsLoading(false);
       }
-
-      const data = await response.json();
-      setExercise(data);
-      setInstructions(data.instructions);
-      setCode(data.code);
     }
 
     getExerciseDetails();
@@ -166,6 +175,22 @@ export default function TeacherExercisePage() {
       setOutputCallback(null);
     };
   }, []);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-red-500">{error}</div>
+      </div>
+    );
+  }
 
   if (!exercise) {
     return null;

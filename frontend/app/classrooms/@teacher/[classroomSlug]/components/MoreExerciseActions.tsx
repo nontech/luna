@@ -54,17 +54,20 @@ export default function MoreExerciseActions({
         isOpen={isEditModalOpen}
         onClose={() => {
           setIsEditModalOpen(false);
-          onExerciseUpdate();
+        }}
+        onExerciseUpdated={async () => {
+          await onExerciseUpdate();
         }}
       />
 
       <DeleteExerciseModal
         exercise={exercise}
-        classroomSlug={classroomSlug}
         isOpen={isDeleteModalOpen}
         onClose={() => {
           setIsDeleteModalOpen(false);
-          onExerciseUpdate();
+        }}
+        onExerciseDeleted={async () => {
+          await onExerciseUpdate();
         }}
       />
     </>

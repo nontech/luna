@@ -1,14 +1,12 @@
 "use client";
 
-import { useParams, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import { CodeEditor } from "@/components/CodeEditor";
 import {
-  runPythonCode,
   runPythonCodeWithTests,
   OutputItem,
   setOutputCallback,
-  provideInput,
 } from "@/services/pyodide";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -17,7 +15,6 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-  CardDescription,
 } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Loader2 } from "lucide-react";
@@ -92,7 +89,6 @@ function TestList({ tests }: { tests: Test[] }) {
 }
 
 export default function SubmissionsPage() {
-  const params = useParams();
   const searchParams = useSearchParams();
   const exerciseId = searchParams.get("id");
 
@@ -149,7 +145,6 @@ export default function SubmissionsPage() {
         }
 
         const data = await response.json();
-        console.log("Submissions data:", data); // Debug log
         setSubmissions(data.submissions);
       } catch (error) {
         console.error("Error fetching submissions:", error);

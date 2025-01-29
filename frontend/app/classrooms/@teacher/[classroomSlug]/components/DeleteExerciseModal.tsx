@@ -15,16 +15,16 @@ import { Exercise } from "@/types/exercise";
 
 interface DeleteExerciseModalProps {
   exercise: Exercise;
-  classroomSlug: string;
   isOpen: boolean;
   onClose: () => void;
+  onExerciseDeleted?: () => void;
 }
 
 export default function DeleteExerciseModal({
   exercise,
-  classroomSlug,
   isOpen,
   onClose,
+  onExerciseDeleted,
 }: DeleteExerciseModalProps) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -54,6 +54,7 @@ export default function DeleteExerciseModal({
       setTimeout(() => {
         onClose();
         router.refresh();
+        onExerciseDeleted?.();
       }, 1500);
     } catch (error) {
       setError(

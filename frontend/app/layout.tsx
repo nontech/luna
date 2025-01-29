@@ -1,6 +1,7 @@
 import "./globals.css";
 import Providers from "./components/Providers";
 import type { Metadata } from "next";
+import Script from "next/script";
 
 export const metadata: Metadata = {
   title: "Luna",
@@ -22,7 +23,6 @@ export default function RootLayout({
     // Suppress hydration warnings
     <html lang="en" data-theme="light" suppressHydrationWarning>
       <head>
-        <script src="https://cdn.jsdelivr.net/pyodide/v0.27.1/full/pyodide.js"></script>
         <link
           rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/codemirror.min.css"
@@ -31,8 +31,14 @@ export default function RootLayout({
           rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/theme/monokai.min.css"
         />
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/codemirror.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/mode/python/python.min.js"></script>
+        <Script
+          src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/codemirror.min.js"
+          strategy="beforeInteractive"
+        />
+        <Script
+          src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/mode/python/python.min.js"
+          strategy="beforeInteractive"
+        />
       </head>
       <body suppressHydrationWarning>
         <Providers>{children}</Providers>

@@ -89,7 +89,7 @@ export default function CreateClassroomModal({
           <DialogTitle>Create a New Classroom</DialogTitle>
           <DialogDescription>
             Enter details for your new classroom. Click create when
-            you're done.
+            you&apos;re done.
           </DialogDescription>
         </DialogHeader>
         {!isSuccess ? (

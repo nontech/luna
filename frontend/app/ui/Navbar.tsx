@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import clsx from "clsx";
 import { useAuth } from "@/contexts/AuthContext";
+import Image from "next/image";
 
 export default function Navbar() {
   const { user, logout } = useAuth();
@@ -21,12 +22,13 @@ export default function Navbar() {
     <div className="navbar bg-[#8c52ff]">
       {/* Left side of navbar */}
       <div className="flex-1">
-        <Link href="/" className="text-xl">
-          <img
+        <Link href="/" className="flex items-center space-x-2">
+          <Image
             src="/logo.png"
-            alt="Project Luna Logo"
-            width={60}
-            height={60}
+            alt="Luna Logo"
+            width={32}
+            height={32}
+            priority
           />
         </Link>
         {user && (
@@ -56,7 +58,10 @@ export default function Navbar() {
             </button>
           </>
         ) : (
-          <Link href="/login" className="btn btn-primary btn-sm">
+          <Link
+            href="http://localhost:8000/accounts/login/"
+            className="btn btn-primary btn-sm"
+          >
             Login
           </Link>
         )}
