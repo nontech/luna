@@ -7,6 +7,7 @@ import {
   useEffect,
   useCallback,
 } from "react";
+import { fetchFromDjango } from "@/utils/api";
 
 interface User {
   email: string;
@@ -41,12 +42,7 @@ export function AuthProvider({
 
   const checkAuth = useCallback(async (): Promise<boolean> => {
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/user/`,
-        {
-          credentials: "include",
-        }
-      );
+      const response = await fetchFromDjango("api/user/");
 
       if (response.ok) {
         const userData = await response.json();
@@ -93,17 +89,13 @@ export function AuthProvider({
       formData.append("username", email);
       formData.append("password", password);
 
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/accounts/login/`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-          },
-          body: formData,
-          credentials: "include",
-        }
-      );
+      const response = await fetchFromDjango("accounts/login/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: formData,
+      });
 
       const data = await response.json();
 
@@ -123,18 +115,13 @@ export function AuthProvider({
 
   const logout = async (): Promise<void> => {
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/logout/`,
-        {
-          method: "POST",
-          credentials: "include",
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-          },
-          mode: "cors",
-        }
-      );
+      const response = await fetchFromDjango("logout/", {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+      });
 
       setUser(null);
 
