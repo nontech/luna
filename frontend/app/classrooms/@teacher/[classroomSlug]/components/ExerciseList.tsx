@@ -14,8 +14,14 @@ export function ExerciseList({
 }: ExerciseListProps) {
   if (exercises.length === 0) {
     return (
-      <div className="text-center py-6">
-        <p className="text-muted-foreground">No exercises found</p>
+      <div className="text-center py-8">
+        <p className="text-gray-500">
+          You haven&apos;t created any exercises yet.
+        </p>
+        <p className="text-gray-500">
+          Click &quot;Create Exercise&quot; to add your first
+          exercise!
+        </p>
       </div>
     );
   }
