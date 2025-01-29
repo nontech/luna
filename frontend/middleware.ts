@@ -3,7 +3,6 @@ import type { NextRequest } from "next/server";
 
 // Define protected routes
 const protectedRoutes = ["/classrooms"];
-const teacherRoutes = ["/classrooms/@teacher"];
 const protectedApiRoutes = ["/api/classrooms", "/api/exercises"];
 
 export function middleware(request: NextRequest) {
@@ -14,9 +13,6 @@ export function middleware(request: NextRequest) {
 
   // Check route types
   const isProtectedRoute = protectedRoutes.some((route) =>
-    pathname.startsWith(route)
-  );
-  const isTeacherRoute = teacherRoutes.some((route) =>
     pathname.startsWith(route)
   );
   const isProtectedApiRoute = protectedApiRoutes.some((route) =>
@@ -44,11 +40,7 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/", request.url));
   }
 
-  // Add teacher role check if needed
-  // if (isTeacherRoute) {
-  //   // Add teacher role verification logic here
-  // }
-
+  // Allow all other routes to proceed
   return NextResponse.next();
 }
 
