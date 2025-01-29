@@ -1,6 +1,5 @@
 "use client";
 
-import { notFound } from "next/navigation";
 import { Exercise } from "@/types/exercise";
 import { useEffect, useCallback, Suspense, useState } from "react";
 import { useParams } from "next/navigation";
