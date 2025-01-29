@@ -8,6 +8,7 @@ import {
   useCallback,
 } from "react";
 import { fetchFromDjangoClient } from "@/utils/clientApi";
+import { useRouter } from "next/navigation";
 
 interface User {
   email: string;
@@ -39,6 +40,7 @@ export function AuthProvider({
 }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter();
 
   const checkAuth = useCallback(async (): Promise<boolean> => {
     try {
@@ -115,7 +117,7 @@ export function AuthProvider({
 
       if (data.success) {
         await checkAuth();
-        window.location.href = data.redirect_url;
+        router.push(data.redirect_url);
       }
     } catch (error) {
       console.error("Login error:", error);
