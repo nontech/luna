@@ -67,7 +67,7 @@ else:
     DEBUG = False
 
 # Controls which host/domain names Django site can serve
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'luna-backend.up.railway.app']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'luna-backend.up.railway.app','luna-frontend-blush.vercel.app']
 
 
 # Controls which origins can make POST/PUT/DELETE requests with CSRF tokens
@@ -75,6 +75,7 @@ ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'luna-backend.up.railway.app']
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:3000",
     "https://luna-backend.up.railway.app",
+    "https://luna-frontend-blush.vercel.app",
 ]
 # Related CSRF settings
 CSRF_COOKIE_SAMESITE = 'Lax'
@@ -84,6 +85,7 @@ CSRF_COOKIE_HTTPONLY = True
 # Controls which origins can make CORS requests to your API
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",    # Local frontend development
+    "https://luna-frontend-blush.vercel.app",
 ]
 CORS_ALLOW_CREDENTIALS = True  # Important for cookies
 CORS_EXPOSE_HEADERS = ['Content-Type', 'X-CSRFToken']
