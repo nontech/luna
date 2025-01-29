@@ -4,6 +4,10 @@ import { cookies } from "next/headers";
 const baseHeaders = {
   "Content-Type": "application/json",
   Accept: "application/json",
+  // Add Origin header to simulate request from frontend
+  Origin:
+    process.env.FRONTEND_URL ||
+    "https://luna-frontend-blush.vercel.app",
 };
 
 export async function fetchFromDjango(
@@ -33,6 +37,7 @@ export async function fetchFromDjango(
 
     console.log("[API Request URL]:", url);
     console.log("[API Request Cookies]:", cookieHeader);
+    console.log("[API Request Origin]:", baseHeaders.Origin);
 
     // Make the request to Django with cookies
     const response = await fetch(url, {
