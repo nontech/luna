@@ -93,14 +93,15 @@ CSRF_COOKIE_HTTPONLY = True
 # Controls which origins can make CORS requests to your API
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",    # Local frontend development
-    FRONTEND_URL,
+    "https://luna-frontend-blush.vercel.app",  # Production frontend
 ]
 CORS_ALLOW_CREDENTIALS = True  # Important for cookies
 
 # Expose necessary headers
 CORS_EXPOSE_HEADERS = [
     'Content-Type', 
-    'X-CSRFToken'
+    'X-CSRFToken',
+    'Set-Cookie'  # Ensure Set-Cookie header is exposed
 ]
 
 # Allow necessary headers
@@ -184,9 +185,9 @@ SIMPLE_JWT = {
     'AUTH_COOKIE_REFRESH': 'refresh_token',
     'AUTH_COOKIE_SECURE': True if ENV_TYPE == 'prod' else False,  # Only use secure cookies in production
     'AUTH_COOKIE_HTTP_ONLY': True,  # This is crucial for security
-    'AUTH_COOKIE_SAMESITE': 'Lax',
+    'AUTH_COOKIE_SAMESITE': 'None' if ENV_TYPE == 'prod' else 'Lax',  # Required for cross-site cookies in production
     'AUTH_COOKIE_PATH': '/',
-    'AUTH_COOKIE_DOMAIN': 'luna-backend.up.railway.app' if ENV_TYPE == 'prod' else None,
+    'AUTH_COOKIE_DOMAIN': None,  # Let the browser handle the domain
     
     # Token lifetime
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
@@ -325,7 +326,9 @@ if os.environ.get('COLLECTING_STATIC', '0') != '1':
 
 # Update Session settings
 SESSION_COOKIE_SECURE = ENV_TYPE == 'prod'
-SESSION_COOKIE_SAMESITE = 'Lax'
+SESSION_COOKIE_SAMESITE = 'None' if ENV_TYPE == 'prod' else 'Lax'
+CSRF_COOKIE_SECURE = ENV_TYPE == 'prod'
+CSRF_COOKIE_SAMESITE = 'None' if ENV_TYPE == 'prod' else 'Lax'
 
 # Add these logging settings
 LOGGING = {
