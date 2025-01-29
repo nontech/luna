@@ -28,16 +28,11 @@ export default function StudentClassroomPage() {
 
   const fetchClassrooms = async () => {
     try {
-      // const response = await fetch(
-      //   "/api/classrooms/get-all-classrooms"
-      // );
       const response = await fetchFromDjangoClient(`classrooms`);
-      console.log("[Auth] Successfully authenticated");
       const data = await response.json();
       setClassrooms(data.classrooms || []);
       setIsLoading(false);
     } catch (error) {
-      console.error("Error:", error);
       setClassrooms([]);
       setIsLoading(false);
     }

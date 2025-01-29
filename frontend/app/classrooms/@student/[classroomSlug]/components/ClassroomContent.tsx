@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/card";
 import Link from "next/link";
 import { Exercise } from "@/types/exercise";
+import { fetchFromDjangoClient } from "@/utils/clientApi";
 
 interface Classroom {
   id: number;
@@ -36,14 +37,8 @@ export function ClassroomContent({
 
   const fetchClassroom = useCallback(async () => {
     try {
-      const response = await fetch(
-        `/api/classrooms/${classroomSlug}`,
-        {
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
+      const response = await fetchFromDjangoClient(
+        `classrooms/${classroomSlug}`
       );
 
       if (!response.ok) {
@@ -61,11 +56,8 @@ export function ClassroomContent({
 
   const fetchExercises = useCallback(async () => {
     try {
-      const response = await fetch(
-        `/api/classrooms/${classroomSlug}/exercises`,
-        {
-          credentials: "include",
-        }
+      const response = await fetchFromDjangoClient(
+        `classrooms/${classroomSlug}/exercises`
       );
 
       if (!response.ok) {
@@ -88,11 +80,10 @@ export function ClassroomContent({
   const handleJoinClassroom = async () => {
     try {
       setIsActionLoading(true);
-      const response = await fetch(
-        `/api/classrooms/${classroomSlug}/join`,
+      const response = await fetchFromDjangoClient(
+        `classrooms/${classroomSlug}/join`,
         {
           method: "POST",
-          credentials: "include",
         }
       );
 
@@ -116,11 +107,10 @@ export function ClassroomContent({
   const handleLeaveClassroom = async () => {
     try {
       setIsActionLoading(true);
-      const response = await fetch(
-        `/api/classrooms/${classroomSlug}/leave`,
+      const response = await fetchFromDjangoClient(
+        `classrooms/${classroomSlug}/leave`,
         {
           method: "DELETE",
-          credentials: "include",
         }
       );
 

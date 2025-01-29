@@ -32,6 +32,21 @@ router = DefaultRouter()
 urlpatterns = [
     path('', home, name='home'),
     
+   # Lists
+
+   # Classroom List
+    path('classrooms', get_classrooms_list, name='get_classrooms_list'),
+
+    # Exercise List
+    path('classroom/<slug:classroom_slug>/exercises/', get_exercise_list, name='get_exercise_list'),
+
+    # Test List
+    path('exercise/<uuid:exercise_id>/tests/', get_tests_list, name='get_tests_list'),
+
+    # Submission List
+    path('exercise/<uuid:exercise_id>/submissions/', get_all_submissions, name='get_all_submissions'),
+   
+    
     # Classroom CRUD
 
     # Create
@@ -43,14 +58,7 @@ urlpatterns = [
     # Delete
     path('delete_classroom/<slug:slug>/', delete_classroom_by_slug, name='delete_classroom_by_slug'),
 
-    # Classroom List
-    path('classrooms', get_classrooms_list, name='get_classrooms_list'),
-
-    # Exercise List
-    path('classroom/<slug:classroom_slug>/exercises/', get_exercise_list, name='get_exercise_list'),
-
-    # Test List
-    path('exercise/<uuid:exercise_id>/tests/', get_tests_list, name='get_tests_list'),
+    
     
     # Exercise CRUD
     
@@ -110,7 +118,6 @@ urlpatterns = [
     path('exercise/<uuid:exercise_id>/submission/create/', create_submission, name='create_submission'),
     # Read
     path('exercise/<uuid:exercise_id>/submission/', get_submission_details, name='get_submission_details'),
-    path('exercise/<uuid:exercise_id>/submissions/', get_all_submissions, name='get_all_submissions'),
     # Update
     path('submission/<uuid:submission_id>/update/', update_submission, name='update_submission'),
 ]

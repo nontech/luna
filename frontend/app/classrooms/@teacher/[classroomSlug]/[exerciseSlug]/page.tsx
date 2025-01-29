@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
 import { TestManager } from "./components/TestManager";
+import { fetchFromDjangoClient } from "@/utils/clientApi";
 
 interface Exercise {
   id: string;
@@ -126,9 +127,9 @@ export default function TeacherExercisePage() {
       setError(null);
 
       try {
-        const response = await fetch(`/api/exercise/${exerciseId}`, {
-          credentials: "include",
-        });
+        const response = await fetchFromDjangoClient(
+          `exercise/${exerciseId}`
+        );
 
         if (!response.ok) {
           throw new Error(
@@ -202,14 +203,10 @@ export default function TeacherExercisePage() {
     setIsSaving(true);
 
     try {
-      const response = await fetch(
-        `/api/exercise/${exercise.id}/update`,
+      const response = await fetchFromDjangoClient(
+        `exercise/update/${exercise.id}`,
         {
           method: "PUT",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-          },
           body: JSON.stringify({
             instructions,
             code,
@@ -241,8 +238,8 @@ export default function TeacherExercisePage() {
 
     try {
       // Fetch tests for this exercise
-      const testsResponse = await fetch(
-        `/api/exercise/${exercise.id}/tests`
+      const testsResponse = await fetchFromDjangoClient(
+        `exercise/${exercise.id}/tests`
       );
       if (!testsResponse.ok) {
         throw new Error("Failed to fetch tests");

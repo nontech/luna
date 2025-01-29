@@ -11,6 +11,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useRouter } from "next/navigation";
+import { fetchFromDjangoClient } from "@/utils/clientApi";
 
 interface Classroom {
   id: number;
@@ -39,8 +40,8 @@ export default function DeleteClassroomModal({
     setError(null);
 
     try {
-      const response = await fetch(
-        `/api/classrooms/${classroom.slug}/delete`,
+      const response = await fetchFromDjangoClient(
+        `delete_classroom/${classroom.slug}`,
         {
           method: "DELETE",
         }

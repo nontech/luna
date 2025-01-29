@@ -19,6 +19,7 @@ import {
   OutputDisplay,
   SubmitModal,
 } from "./components";
+import { fetchFromDjangoClient } from "@/utils/clientApi";
 
 interface Exercise {
   id: string;
@@ -75,9 +76,11 @@ export default function StudentExercisePage() {
       try {
         const [exerciseRes, testsRes, submissionRes] =
           await Promise.all([
-            fetch(`/api/exercise/${exerciseId}`),
-            fetch(`/api/exercise/${exerciseId}/tests`),
-            fetch(`/api/exercise/${exerciseId}/submission`),
+            fetchFromDjangoClient(`exercise/${exerciseId}`),
+            fetchFromDjangoClient(`exercise/${exerciseId}/tests`),
+            fetchFromDjangoClient(
+              `exercise/${exerciseId}/submission`
+            ),
           ]);
 
         if (!exerciseRes.ok)
@@ -125,11 +128,10 @@ export default function StudentExercisePage() {
     try {
       // Create new submission if none exists
       if (!submission) {
-        const response = await fetch(
-          `/api/exercise/${exercise.id}/create-submission`,
+        const response = await fetchFromDjangoClient(
+          `exercise/${exercise.id}/submission/create`,
           {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ code }),
           }
         );
@@ -142,11 +144,10 @@ export default function StudentExercisePage() {
       }
 
       // Update existing submission with status assigned_to_student
-      const response = await fetch(
-        `/api/submission/${submission.id}/update`,
+      const response = await fetchFromDjangoClient(
+        `submission/${submission.id}/update`,
         {
           method: "PUT",
-          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             code,
             status: "assigned_to_student",
@@ -210,11 +211,10 @@ export default function StudentExercisePage() {
 
     try {
       // First save the latest code and update status
-      const response = await fetch(
-        `/api/submission/${submission.id}/update`,
+      const response = await fetchFromDjangoClient(
+        `submission/${submission.id}/update`,
         {
           method: "PUT",
-          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             code,
             status: "submitted_by_student",

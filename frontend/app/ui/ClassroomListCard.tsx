@@ -13,6 +13,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import clsx from "clsx";
 import ClassroomCreator from "./CreateClassroomModal";
+import { fetchFromDjangoClient } from "@/utils/clientApi";
 
 // Update interface to match backend response
 interface Classroom {
@@ -33,9 +34,7 @@ export default function ClassroomsCard() {
 
   const fetchClassrooms = async () => {
     try {
-      const response = await fetch(
-        "/api/classrooms/get-all-classrooms"
-      );
+      const response = await fetchFromDjangoClient(`classrooms`);
       const data = await response.json();
 
       // If the route handler returned an error, use that message

@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Loader2 } from "lucide-react";
+import { fetchFromDjangoClient } from "@/utils/clientApi";
 
 interface Test {
   id: string;
@@ -109,9 +110,9 @@ export default function SubmissionsPage() {
       if (!exerciseId) return;
 
       try {
-        const response = await fetch(`/api/exercise/${exerciseId}`, {
-          credentials: "include",
-        });
+        const response = await fetchFromDjangoClient(
+          `exercise/${exerciseId}`
+        );
 
         if (!response.ok) {
           throw new Error("Failed to fetch exercise");
@@ -133,11 +134,8 @@ export default function SubmissionsPage() {
       if (!exerciseId) return;
 
       try {
-        const response = await fetch(
-          `/api/exercise/${exerciseId}/submissions`,
-          {
-            credentials: "include",
-          }
+        const response = await fetchFromDjangoClient(
+          `exercise/${exerciseId}/submissions`
         );
 
         if (!response.ok) {
@@ -160,8 +158,8 @@ export default function SubmissionsPage() {
       if (!exerciseId) return;
 
       try {
-        const response = await fetch(
-          `/api/exercise/${exerciseId}/tests`
+        const response = await fetchFromDjangoClient(
+          `exercise/${exerciseId}/tests`
         );
         if (!response.ok) {
           throw new Error("Failed to fetch tests");
@@ -245,14 +243,10 @@ export default function SubmissionsPage() {
     setIsSaving(true);
 
     try {
-      const response = await fetch(
-        `/api/submission/${selectedSubmission.id}/update`,
+      const response = await fetchFromDjangoClient(
+        `submission/${selectedSubmission.id}/update`,
         {
           method: "PUT",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-          },
           body: JSON.stringify({
             feedback,
             status: "reviewed_by_teacher",

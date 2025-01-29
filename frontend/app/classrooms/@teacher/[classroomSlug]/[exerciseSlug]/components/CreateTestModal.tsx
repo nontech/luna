@@ -18,6 +18,7 @@ import {
   RadioGroup,
   RadioGroupItem,
 } from "@/components/ui/radio-group";
+import { fetchFromDjangoClient } from "@/utils/clientApi";
 
 interface CreateTestModalProps {
   exerciseId: string;
@@ -44,13 +45,10 @@ export default function CreateTestModal({
     setError(null);
 
     try {
-      const response = await fetch(
-        `/api/exercise/${exerciseId}/tests`,
+      const response = await fetchFromDjangoClient(
+        `exercise/${exerciseId}/tests`,
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
           body: JSON.stringify({
             name: testName,
             test_type: testType,

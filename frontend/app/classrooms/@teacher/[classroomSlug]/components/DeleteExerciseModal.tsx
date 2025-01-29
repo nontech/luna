@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { useRouter } from "next/navigation";
 import { Exercise } from "@/types/exercise";
+import { fetchFromDjangoClient } from "@/utils/clientApi";
 
 interface DeleteExerciseModalProps {
   exercise: Exercise;
@@ -36,11 +37,10 @@ export default function DeleteExerciseModal({
     setError(null);
 
     try {
-      const response = await fetch(
-        `/api/exercise/${exercise.id}/delete`,
+      const response = await fetchFromDjangoClient(
+        `exercise/delete/${exercise.id}`,
         {
           method: "DELETE",
-          credentials: "include",
         }
       );
 

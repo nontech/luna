@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useRouter } from "next/navigation";
+import { fetchFromDjangoClient } from "@/utils/clientApi";
 
 interface Classroom {
   id: number;
@@ -44,13 +45,10 @@ export default function EditClassroomModal({
     setIsUpdating(true);
 
     try {
-      const response = await fetch(
-        `/api/classrooms/${classroom.slug}/update`,
+      const response = await fetchFromDjangoClient(
+        `update_classroom/${classroom.slug}`,
         {
           method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
           body: JSON.stringify({
             name: classroomName,
             description: description,

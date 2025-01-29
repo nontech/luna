@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Exercise } from "@/types/exercise";
+import { fetchFromDjangoClient } from "@/utils/clientApi";
 
 interface EditExerciseModalProps {
   exercise: Exercise;
@@ -44,13 +45,10 @@ export default function EditExerciseModal({
     setError(null);
 
     try {
-      const response = await fetch(
-        `/api/exercise/${exercise.id}/update`,
+      const response = await fetchFromDjangoClient(
+        `exercise/update/${exercise.id}`,
         {
           method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
           body: JSON.stringify({
             name: formData.name,
             instructions: formData.instructions,

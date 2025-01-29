@@ -13,12 +13,6 @@ export default function TeacherClassroomPage() {
 
   const fetchClassrooms = React.useCallback(async () => {
     try {
-      // const response = await fetch(
-      //   "/api/classrooms/get-all-classrooms",
-      //   {
-      //     credentials: "include",
-      //   }
-      // );
       const response = await fetchFromDjangoClient(`classrooms`);
       const data = await response.json();
 

@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useRouter } from "next/navigation";
+import { fetchFromDjangoClient } from "@/utils/clientApi";
 
 export default function ClassroomCreator() {
   const [open, setOpen] = useState(false);
@@ -30,13 +31,10 @@ export default function ClassroomCreator() {
     setError(null);
 
     try {
-      const response = await fetch(
-        "/api/classrooms/create-classroom",
+      const response = await fetchFromDjangoClient(
+        `create_new_classroom`,
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
           body: JSON.stringify({
             name: classroomName,
             description: description,

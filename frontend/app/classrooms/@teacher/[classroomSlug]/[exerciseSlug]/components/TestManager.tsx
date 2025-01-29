@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import CreateTestModal from "./CreateTestModal";
+import { fetchFromDjangoClient } from "@/utils/clientApi";
 
 interface Test {
   id: string;
@@ -17,8 +18,8 @@ export function TestManager({ exerciseId }: { exerciseId: string }) {
 
   const fetchTests = useCallback(async () => {
     try {
-      const response = await fetch(
-        `/api/exercise/${exerciseId}/tests`
+      const response = await fetchFromDjangoClient(
+        `exercise/${exerciseId}/tests`
       );
       if (response.ok) {
         const data = await response.json();

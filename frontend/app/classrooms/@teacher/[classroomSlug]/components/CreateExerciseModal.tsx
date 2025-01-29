@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useRouter } from "next/navigation";
+import { fetchFromDjangoClient } from "@/utils/clientApi";
 
 interface CreateExerciseModalProps {
   classroomSlug: string;
@@ -38,14 +39,10 @@ export default function CreateExerciseModal({
     setError(null);
 
     try {
-      const response = await fetch(
-        `/api/classrooms/${classroomSlug}/exercises/create-exercise`,
+      const response = await fetchFromDjangoClient(
+        `classroom/${classroomSlug}/create_new_exercise`,
         {
           method: "POST",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-          },
           body: JSON.stringify({
             name: exerciseName,
             instructions,

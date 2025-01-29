@@ -6,6 +6,7 @@ import { Exercise } from "@/types/exercise";
 import CreateExerciseModal from "./components/CreateExerciseModal";
 import { useEffect, useCallback, Suspense, useState } from "react";
 import { useParams } from "next/navigation";
+import { fetchFromDjangoClient } from "@/utils/clientApi";
 
 function ExerciseListWrapper({
   classroomSlug,
@@ -16,11 +17,8 @@ function ExerciseListWrapper({
 
   const fetchExercises = useCallback(async () => {
     try {
-      const response = await fetch(
-        `/api/classrooms/${classroomSlug}/exercises`,
-        {
-          credentials: "include",
-        }
+      const response = await fetchFromDjangoClient(
+        `classroom/${classroomSlug}/exercises`
       );
 
       if (!response.ok) {
