@@ -1,47 +1,32 @@
 // utils/api.ts
 import { cookies } from "next/headers";
 
+const baseHeaders = {
+  "Content-Type": "application/json",
+  Accept: "application/json",
+};
+
 export async function fetchFromDjango(
   endpoint: string,
   options: RequestInit = {}
 ) {
-  const baseHeaders = {
-    "Content-Type": "application/json",
-    Accept: "application/json",
-  };
+  // Get cookies from the server-side cookie store
+  const cookieStore = await cookies();
+  const accessToken = cookieStore.get("access_token");
 
-  // In server components, get the cookie from the cookie store
-  if (typeof window === "undefined") {
-    try {
-      const cookieStore = await cookies();
-      const accessToken = cookieStore.get("access_token");
+  // Construct the URL
+  const url = `${process.env.API_URL}/${endpoint}`;
 
-      if (!accessToken?.value) {
-        throw new Error("Not authenticated");
-      }
-
-      return fetch(`${process.env.API_URL}/${endpoint}`, {
-        ...options,
-        headers: {
-          ...baseHeaders,
-          ...options.headers,
-          Cookie: `access_token=${accessToken.value}`,
-        },
-        credentials: "include",
-      });
-    } catch (error) {
-      console.error("Error handling server-side request:", error);
-      throw error;
-    }
-  }
-
-  // Client-side request
-  return fetch(`${process.env.API_URL}/${endpoint}`, {
+  // Make the request to Django with cookies
+  const response = await fetch(url, {
     ...options,
     headers: {
       ...baseHeaders,
       ...options.headers,
+      Cookie: accessToken ? `access_token=${accessToken.value}` : "",
     },
     credentials: "include",
   });
+
+  return response;
 }
