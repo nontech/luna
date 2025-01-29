@@ -57,7 +57,7 @@ export function ClassroomContent({
   const fetchExercises = useCallback(async () => {
     try {
       const response = await fetchFromDjangoClient(
-        `classrooms/${classroomSlug}/exercises`
+        `classroom/${classroomSlug}/exercises`
       );
 
       if (!response.ok) {
