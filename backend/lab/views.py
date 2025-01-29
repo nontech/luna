@@ -1,6 +1,7 @@
 # Imports
 import json
 import os
+import logging
 from django.utils.text import slugify
 
 # Django
@@ -10,6 +11,8 @@ from django.urls import reverse
 
 # Settings
 from django.conf import settings
+
+logger = logging.getLogger(__name__)
 
 # Views
 from django.views import generic
@@ -546,14 +549,18 @@ def signup(request):
                 # Add domain setting in production
                 if settings.ENV_TYPE == 'prod':
                     cookie_settings['domain'] = settings.SIMPLE_JWT['AUTH_COOKIE_DOMAIN']
-                    logger.info("Cookie domain: %s", settings.SIMPLE_JWT['AUTH_COOKIE_DOMAIN'])
+                    logger.info("Setting cookie for domain: %s", cookie_settings['domain'])
                 
+                # Set access token cookie
+                access_token = str(refresh.access_token)
                 response.set_cookie(
                     'access_token',
-                    str(refresh.access_token),
+                    access_token,
                     max_age=3600,
                     **cookie_settings
                 )
+                
+                # Set refresh token cookie
                 response.set_cookie(
                     'refresh_token',
                     str(refresh),
@@ -563,7 +570,7 @@ def signup(request):
                 
                 return response
         else:
-            print("Form errors:", form.errors)
+            logger.error("Form errors: %s", form.errors)
     else:
         form = EmailSignUpForm()
     return render(request, 'registration/signup.html', {'form': form})
