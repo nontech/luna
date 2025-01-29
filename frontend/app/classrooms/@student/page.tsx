@@ -25,25 +25,43 @@ interface Classroom {
 export default function StudentClassroomPage() {
   const [classrooms, setClassrooms] = React.useState<Classroom[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
-
-  const fetchClassrooms = async () => {
-    try {
-      const response = await fetchFromDjangoClient(`classrooms`);
-      const data = await response.json();
-      setClassrooms(data.classrooms || []);
-      setIsLoading(false);
-    } catch (error) {
-      setClassrooms([]);
-      setIsLoading(false);
-    }
-  };
+  const [errorMessage, setErrorMessage] = React.useState<
+    string | null
+  >(null);
 
   React.useEffect(() => {
+    const fetchClassrooms = async () => {
+      try {
+        setIsLoading(true);
+        const response = await fetchFromDjangoClient("classrooms");
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch classrooms");
+        }
+
+        const data = await response.json();
+        setClassrooms(data.classrooms || []);
+        setErrorMessage(null);
+      } catch (err) {
+        // Use the error in a meaningful way
+        setErrorMessage(
+          err instanceof Error ? err.message : "An error occurred"
+        );
+        setClassrooms([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
     fetchClassrooms();
   }, []);
 
   if (isLoading) {
     return <div>Loading...</div>;
+  }
+
+  if (errorMessage) {
+    return <div>Error: {errorMessage}</div>;
   }
 
   return (
