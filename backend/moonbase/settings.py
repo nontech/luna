@@ -53,6 +53,7 @@ else:
     # No need to load any .env file
     pass
 
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
@@ -66,6 +67,13 @@ if ENV_TYPE == 'local':
 else:
     DEBUG = False
 
+# Define FRONTEND_URL based on environment
+if ENV_TYPE == 'local' or ENV_TYPE == 'docker':
+    FRONTEND_URL = "http://localhost:3000"
+else:  # prod
+    FRONTEND_URL = "https://luna-frontend-blush.vercel.app"
+
+
 # Controls which host/domain names Django site can serve
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'luna-backend.up.railway.app','luna-frontend-blush.vercel.app']
 
@@ -75,7 +83,7 @@ ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'luna-backend.up.railway.app','luna-f
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:3000",
     "https://luna-backend.up.railway.app",
-    "https://luna-frontend-blush.vercel.app",
+    FRONTEND_URL,
 ]
 # Related CSRF settings
 CSRF_COOKIE_SAMESITE = 'Lax'
@@ -85,7 +93,7 @@ CSRF_COOKIE_HTTPONLY = True
 # Controls which origins can make CORS requests to your API
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",    # Local frontend development
-    "https://luna-frontend-blush.vercel.app",
+    FRONTEND_URL,
 ]
 CORS_ALLOW_CREDENTIALS = True  # Important for cookies
 CORS_EXPOSE_HEADERS = ['Content-Type', 'X-CSRFToken']
@@ -111,8 +119,8 @@ CORS_ALLOW_METHODS = [
 ]
 
 # Redirects
-LOGIN_REDIRECT_URL = 'https://luna-frontend-blush.vercel.app'
-LOGOUT_REDIRECT_URL = 'https://luna-frontend-blush.vercel.app'
+LOGIN_REDIRECT_URL = FRONTEND_URL
+LOGOUT_REDIRECT_URL = FRONTEND_URL
 
 # Application definition
 

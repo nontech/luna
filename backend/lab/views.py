@@ -55,19 +55,19 @@ from .forms import EmailSignUpForm
 # Examples of views
 
 # This is a DRF view - requires authentication by default
-@api_view(['GET'])
-def get_user_details(request):  # Will require authentication
-    ...
+#@api_view(['GET'])
+# def get_user_details(request):  # Will require authentication
+#     ...
 
 # This is a regular Django view - NOT affected by DRF permissions
-def signup(request):  # Does NOT require authentication
-    ...
+# def signup(request):  # Does NOT require authentication
+#     ...
 
 # You can override the default permission for specific views
-@api_view(['GET'])
-@permission_classes([AllowAny])  # Override to allow unauthenticated access
-def public_api_view(request):
-    ...
+# @api_view(['GET'])
+# @permission_classes([AllowAny])  # Override to allow unauthenticated access
+# def public_api_view(request):
+#    ...
 
 # Create your views here.
 
@@ -533,7 +533,7 @@ def signup(request):
                 # Generate JWT tokens
                 refresh = RefreshToken.for_user(authenticated_user)
                 
-                response = HttpResponseRedirect('http://localhost:3000')
+                response = HttpResponseRedirect(settings.LOGIN_REDIRECT_URL)
                 
                 # Set cookies with debug logging
                 cookie_settings = {
@@ -645,7 +645,7 @@ def login_view(request):
             
             response = JsonResponse({
                 'success': True,
-                'redirect_url': 'http://localhost:3000'
+                'redirect_url': settings.LOGIN_REDIRECT_URL
             })
             
             # Set JWT token in HTTP-only cookie
@@ -675,7 +675,7 @@ def logout_view(request):
         # Clear Session Authentication
         logout(request)
 
-        response = HttpResponseRedirect('http://localhost:3000')
+        response = HttpResponseRedirect(settings.LOGOUT_REDIRECT_URL)
         
         # Clear JWT tokens
         # Only path and samesite are valid parameters for delete_cookie
