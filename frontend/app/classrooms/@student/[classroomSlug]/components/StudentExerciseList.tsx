@@ -53,7 +53,7 @@ export function StudentExerciseList({
                   </span>
                 </div>
                 <Link
-                  href={`/classrooms/${classroomSlug}/${exercise.slug}`}
+                  href={`/classrooms/${classroomSlug}/${exercise.slug}?id=${exercise.id}`}
                   className="text-blue-600 hover:text-blue-800 font-medium"
                 >
                   Start Exercise →
