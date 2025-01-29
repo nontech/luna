@@ -3,9 +3,6 @@ from .models import Classrooms, Exercises
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import Group
 
-# class NameForm(forms.Form):
-#     your_name = forms.CharField(label="Your name", max_length=100)
-
 
 class ClassroomForm(forms.ModelForm):
     class Meta:
@@ -59,6 +56,14 @@ class EmailSignUpForm(UserCreationForm):
             'class': "radio radio-primary mr-2"
         })
         self.fields['role'].widget.attrs['class_container'] = "flex gap-6 mt-2"
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if email:
+            # Check if any user exists with this email
+            if self._meta.model.objects.filter(email=email).exists():
+                raise forms.ValidationError('A user with this email already exists.')
+        return email
 
     def clean(self):
         cleaned_data = super().clean()

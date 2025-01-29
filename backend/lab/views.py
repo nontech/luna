@@ -633,38 +633,52 @@ def get_user_details(request):
 @never_cache
 def login_view(request):
     if request.method == 'POST':
-        username = request.POST.get('username')
-        password = request.POST.get('password')
-        user = authenticate(request, username=username, password=password)
-        
-        if user is not None:
-            login(request, user)
+        try:
+            username = request.POST.get('username')
+            password = request.POST.get('password')
             
-            # Generate JWT token
-            refresh = RefreshToken.for_user(user)
+            if not username or not password:
+                return JsonResponse({
+                    'success': False,
+                    'error': 'Username and password are required'
+                }, status=400)
+                
+            user = authenticate(request, username=username, password=password)
             
-            response = JsonResponse({
-                'success': True,
-                'redirect_url': settings.LOGIN_REDIRECT_URL
-            })
-            
-            # Set JWT token in HTTP-only cookie
-            response.set_cookie(
-                'access_token',
-                str(refresh.access_token),
-                httponly=True,
-                secure=settings.SIMPLE_JWT['AUTH_COOKIE_SECURE'],
-                samesite='Lax',
-                path='/',
-                max_age=3600  # 1 hour
-            )
-            
-            return response
-        else:
+            if user is not None:
+                login(request, user)
+                
+                # Generate JWT token
+                refresh = RefreshToken.for_user(user)
+                
+                response = JsonResponse({
+                    'success': True,
+                    'redirect_url': settings.LOGIN_REDIRECT_URL
+                })
+                
+                # Set JWT token in HTTP-only cookie
+                response.set_cookie(
+                    'access_token',
+                    str(refresh.access_token),
+                    httponly=True,
+                    secure=settings.SIMPLE_JWT['AUTH_COOKIE_SECURE'],
+                    samesite='Lax',
+                    path='/',
+                    max_age=3600  # 1 hour
+                )
+                
+                return response
+            else:
+                return JsonResponse({
+                    'success': False,
+                    'error': 'Invalid credentials'
+                }, status=401)
+        except Exception as e:
+            print(f"Login error: {str(e)}")
             return JsonResponse({
                 'success': False,
-                'error': 'Invalid credentials'
-            }, status=401)
+                'error': 'An unexpected error occurred'
+            }, status=500)
             
     return render(request, 'registration/login.html')
 
