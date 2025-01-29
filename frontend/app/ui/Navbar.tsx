@@ -59,7 +59,7 @@ export default function Navbar() {
           </>
         ) : (
           <Link
-            href="http://localhost:8000/accounts/login/"
+            href={`${process.env.NEXT_PUBLIC_API_URL}/accounts/login/`}
             className="btn btn-primary btn-sm"
           >
             Login

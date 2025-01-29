@@ -42,7 +42,7 @@ export function AuthProvider({
   const checkAuth = useCallback(async (): Promise<boolean> => {
     try {
       const response = await fetch(
-        "http://localhost:8000/api/user/",
+        `${process.env.NEXT_PUBLIC_API_URL}/api/user/`,
         {
           credentials: "include",
         }
@@ -94,7 +94,7 @@ export function AuthProvider({
       formData.append("password", password);
 
       const response = await fetch(
-        "http://localhost:8000/accounts/login/",
+        `${process.env.NEXT_PUBLIC_API_URL}/accounts/login/`,
         {
           method: "POST",
           headers: {
@@ -123,15 +123,18 @@ export function AuthProvider({
 
   const logout = async (): Promise<void> => {
     try {
-      const response = await fetch("http://localhost:8000/logout/", {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-        mode: "cors",
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/logout/`,
+        {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+          mode: "cors",
+        }
+      );
 
       setUser(null);
 
