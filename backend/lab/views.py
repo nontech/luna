@@ -546,6 +546,7 @@ def signup(request):
                 # Add domain setting in production
                 if settings.ENV_TYPE == 'prod':
                     cookie_settings['domain'] = settings.SIMPLE_JWT['AUTH_COOKIE_DOMAIN']
+                    logger.info("Cookie domain: %s", settings.SIMPLE_JWT['AUTH_COOKIE_DOMAIN'])
                 
                 response.set_cookie(
                     'access_token',

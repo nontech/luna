@@ -346,7 +346,7 @@ if ENV_TYPE == 'prod':
     # Update JWT cookie settings for production
     SIMPLE_JWT['AUTH_COOKIE_SECURE'] = True
     SIMPLE_JWT['AUTH_COOKIE_SAMESITE'] = 'Lax'
-    SIMPLE_JWT['AUTH_COOKIE_DOMAIN'] = '.railway.app'  # Allow cookies for railway.app and subdomains
+    SIMPLE_JWT['AUTH_COOKIE_DOMAIN'] = 'luna-backend.up.railway.app'  # Use full domain instead of subdomain
     
     # Security settings
     SECURE_SSL_REDIRECT = True # Redirects to HTTPS causes 301
