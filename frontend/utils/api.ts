@@ -20,7 +20,7 @@ export async function fetchFromDjango(
         throw new Error("Not authenticated");
       }
 
-      return fetch(`${process.env.API_URL}${endpoint}`, {
+      return fetch(`${process.env.API_URL}/${endpoint}`, {
         ...options,
         headers: {
           ...baseHeaders,
@@ -36,7 +36,7 @@ export async function fetchFromDjango(
   }
 
   // Client-side request
-  return fetch(`${process.env.API_URL}${endpoint}`, {
+  return fetch(`${process.env.API_URL}/${endpoint}`, {
     ...options,
     headers: {
       ...baseHeaders,
