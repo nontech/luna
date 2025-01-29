@@ -40,7 +40,7 @@ export default function CreateExerciseModal({
 
     try {
       const response = await fetchFromDjangoClient(
-        `classroom/${classroomSlug}/create_new_exercise`,
+        `classroom/${classroomSlug}/create_new_exercise/`,
         {
           method: "POST",
           body: JSON.stringify({
