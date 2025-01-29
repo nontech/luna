@@ -3,29 +3,93 @@
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
+import { useEffect, useState } from "react";
+import { fetchFromDjangoClient } from "@/utils/clientApi";
+
+interface ClassroomData {
+  name: string;
+  slug: string;
+}
+
+interface ExerciseData {
+  name: string;
+  slug: string;
+}
 
 export default function Breadcrumb() {
   const pathname = usePathname();
-  if (!pathname) return null;
+  const [classroom, setClassroom] = useState<ClassroomData | null>(
+    null
+  );
+  const [exercise, setExercise] = useState<ExerciseData | null>(null);
 
-  const segments = pathname
-    .split("/")
-    .filter((segment) => segment !== "")
-    .map((segment) => {
-      // Convert slug to display text
-      return segment.replace(/-/g, " ");
+  useEffect(() => {
+    async function fetchData() {
+      if (!pathname) return;
+
+      const segments = pathname.split("/").filter(Boolean);
+
+      // If we're in a classroom route
+      if (segments[0] === "classrooms" && segments[1]) {
+        try {
+          const response = await fetchFromDjangoClient(
+            `classroom/${segments[1]}/`
+          );
+          if (response.ok) {
+            const data = await response.json();
+            setClassroom({ name: data.name, slug: data.slug });
+
+            // If we're in an exercise route
+            if (segments[2]) {
+              const exerciseResponse = await fetchFromDjangoClient(
+                `exercise/${segments[2]}/`
+              );
+              if (exerciseResponse.ok) {
+                const exerciseData = await exerciseResponse.json();
+                setExercise({
+                  name: exerciseData.name,
+                  slug: exerciseData.slug,
+                });
+              }
+            } else {
+              setExercise(null);
+            }
+          }
+        } catch (error) {
+          console.error("Error fetching breadcrumb data:", error);
+        }
+      }
+    }
+
+    fetchData();
+  }, [pathname]);
+
+  // Define fixed breadcrumb items
+  const breadcrumbItems = [{ label: "Home", href: "/" }];
+
+  // Add Classrooms link if we're in the classrooms section
+  if (pathname?.includes("/classrooms")) {
+    breadcrumbItems.push({
+      label: "Classrooms",
+      href: "/classrooms",
     });
+  }
 
-  const breadcrumbItems = [
-    { label: "Home", href: "/" },
-    ...segments.map((segment, index) => {
-      const href = "/" + segments.slice(0, index + 1).join("/");
-      return {
-        label: segment,
-        href,
-      };
-    }),
-  ];
+  // Add classroom if available
+  if (classroom && pathname?.includes("/classrooms/")) {
+    breadcrumbItems.push({
+      label: classroom.name,
+      href: `/classrooms/${classroom.slug}`,
+    });
+  }
+
+  // Add exercise if available
+  if (exercise && classroom && pathname?.includes("/classrooms/")) {
+    breadcrumbItems.push({
+      label: exercise.name,
+      href: `/classrooms/${classroom.slug}/${exercise.slug}`,
+    });
+  }
 
   return (
     <nav className="flex items-center space-x-2 text-sm text-gray-600 mb-4">
