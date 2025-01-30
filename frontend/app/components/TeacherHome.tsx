@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import Navbar from "../ui/Navbar";
+import Navbar from "./Navbar";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function TeacherHome() {

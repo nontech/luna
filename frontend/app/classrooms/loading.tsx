@@ -1,4 +1,4 @@
-import Navbar from "@/app/ui/Navbar";
+import Navbar from "@/app/components/Navbar";
 
 export default function ClassroomsLoading() {
   return (

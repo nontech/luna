@@ -1,5 +1,5 @@
 import React from "react";
-import Navbar from "@/app/ui/Navbar";
+import Navbar from "@/app/components/Navbar";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import Breadcrumb from "@/app/components/Breadcrumb";

@@ -2,7 +2,7 @@
 
 import { useSearchParams } from "next/navigation";
 import { useState, useEffect } from "react";
-import { CodeEditor } from "@/components/CodeEditor";
+import { CodeEditor } from "@/app/components/CodeEditor";
 import {
   runPythonCodeWithTests,
   OutputItem,

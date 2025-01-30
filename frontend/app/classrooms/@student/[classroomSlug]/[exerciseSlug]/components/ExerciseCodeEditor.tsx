@@ -5,7 +5,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { CodeEditor } from "@/components/CodeEditor";
+import { CodeEditor } from "@/app/components/CodeEditor";
 import { Loader2 } from "lucide-react";
 
 interface ExerciseCodeEditorProps {
