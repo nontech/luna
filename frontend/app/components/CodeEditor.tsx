@@ -83,6 +83,13 @@ export function CodeEditor({
     }
   }, [readOnly]);
 
+  useEffect(() => {
+    // Only update if editor exists and this is the first initialization
+    if (editorRef.current && !editorRef.current.getValue()) {
+      editorRef.current.setValue(initialCode);
+    }
+  }, [initialCode]);
+
   return (
     <div
       ref={containerRef}
