@@ -38,7 +38,7 @@ export default function DeleteExerciseModal({
 
     try {
       const response = await fetchFromDjangoClient(
-        `exercise/delete/${exercise.id}`,
+        `api/exercises/${exercise.id}/delete/`,
         {
           method: "DELETE",
         }

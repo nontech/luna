@@ -72,6 +72,8 @@ function OutputDisplay({ items }: { items: OutputItem[] }) {
               <div>{item.content}</div>
               <div className="flex space-x-2">
                 <input
+                  id={`input-${item.id}`}
+                  name={`input-${item.id}`}
                   type="text"
                   value={inputValues[item.id!] || ""}
                   onChange={(e) =>
@@ -87,6 +89,7 @@ function OutputDisplay({ items }: { items: OutputItem[] }) {
                   }}
                   className="flex-1 px-2 py-1 border rounded"
                   placeholder="Enter your input..."
+                  autoComplete="off"
                 />
                 <Button
                   onClick={() => handleInputSubmit(item.id!)}
@@ -128,7 +131,7 @@ export default function TeacherExercisePage() {
 
       try {
         const response = await fetchFromDjangoClient(
-          `exercise/${exerciseId}`
+          `api/exercises/${exerciseId}/`
         );
 
         if (!response.ok) {
@@ -204,7 +207,7 @@ export default function TeacherExercisePage() {
 
     try {
       const response = await fetchFromDjangoClient(
-        `exercise/update/${exercise.id}`,
+        `api/exercises/${exercise.id}/update/`,
         {
           method: "PUT",
           body: JSON.stringify({
@@ -239,7 +242,7 @@ export default function TeacherExercisePage() {
     try {
       // Fetch tests for this exercise
       const testsResponse = await fetchFromDjangoClient(
-        `exercise/${exercise.id}/tests`
+        `api/exercises/${exercise.id}/tests/`
       );
       if (!testsResponse.ok) {
         throw new Error("Failed to fetch tests");
@@ -348,10 +351,10 @@ export default function TeacherExercisePage() {
             <CardContent>
               <div>
                 <CodeEditor
+                  key={exercise.id}
                   initialCode={code}
-                  onChange={(newCode) => {
-                    setCode(newCode);
-                  }}
+                  onChange={setCode}
+                  readOnly={isRunning}
                 />
               </div>
             </CardContent>

@@ -40,7 +40,7 @@ export default function EditClassroomModal({
 
     try {
       const response = await fetchFromDjangoClient(
-        `update_classroom/${classroom.slug}`,
+        `api/classrooms/${classroom.slug}/update/`,
         {
           method: "PUT",
           body: JSON.stringify({

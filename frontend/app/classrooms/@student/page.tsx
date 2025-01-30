@@ -33,7 +33,9 @@ export default function StudentClassroomPage() {
     const fetchClassrooms = async () => {
       try {
         setIsLoading(true);
-        const response = await fetchFromDjangoClient("classrooms");
+        const response = await fetchFromDjangoClient(
+          "api/classrooms/"
+        );
 
         if (!response.ok) {
           throw new Error("Failed to fetch classrooms");

@@ -76,10 +76,12 @@ export default function StudentExercisePage() {
       try {
         const [exerciseRes, testsRes, submissionRes] =
           await Promise.all([
-            fetchFromDjangoClient(`exercise/${exerciseId}`),
-            fetchFromDjangoClient(`exercise/${exerciseId}/tests`),
+            fetchFromDjangoClient(`api/exercises/${exerciseId}/`),
             fetchFromDjangoClient(
-              `exercise/${exerciseId}/submission`
+              `api/exercises/${exerciseId}/tests/`
+            ),
+            fetchFromDjangoClient(
+              `api/exercises/${exerciseId}/submission/`
             ),
           ]);
 
@@ -129,7 +131,7 @@ export default function StudentExercisePage() {
       // Create new submission if none exists
       if (!submission) {
         const response = await fetchFromDjangoClient(
-          `exercise/${exercise.id}/submission/create`,
+          `api/exercises/${exercise.id}/submissions/create`,
           {
             method: "POST",
             body: JSON.stringify({ code }),
@@ -145,7 +147,7 @@ export default function StudentExercisePage() {
 
       // Update existing submission with status assigned_to_student
       const response = await fetchFromDjangoClient(
-        `submission/${submission.id}/update`,
+        `api/submissions/${submission.id}/update/`,
         {
           method: "PUT",
           body: JSON.stringify({
@@ -212,7 +214,7 @@ export default function StudentExercisePage() {
     try {
       // First save the latest code and update status
       const response = await fetchFromDjangoClient(
-        `submission/${submission.id}/update`,
+        `api/submissions/${submission.id}/update/`,
         {
           method: "PUT",
           body: JSON.stringify({

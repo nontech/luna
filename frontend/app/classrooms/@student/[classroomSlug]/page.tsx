@@ -19,7 +19,7 @@ function ExerciseListWrapper({
     try {
       setIsLoading(true);
       const response = await fetchFromDjangoClient(
-        `classroom/${classroomSlug}/exercises/`
+        `api/classrooms/${classroomSlug}/exercises/`
       );
 
       if (!response.ok) {

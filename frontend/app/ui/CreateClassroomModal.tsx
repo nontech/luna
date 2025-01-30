@@ -32,7 +32,7 @@ export default function ClassroomCreator() {
 
     try {
       const response = await fetchFromDjangoClient(
-        `create_new_classroom`,
+        `api/classrooms/create/`,
         {
           method: "POST",
           body: JSON.stringify({

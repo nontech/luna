@@ -13,7 +13,7 @@ export default function TeacherClassroomPage() {
 
   const fetchClassrooms = React.useCallback(async () => {
     try {
-      const response = await fetchFromDjangoClient(`classrooms`);
+      const response = await fetchFromDjangoClient(`api/classrooms/`);
       const data = await response.json();
 
       if (!response.ok) {

@@ -1,6 +1,6 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -18,6 +18,7 @@ interface ExerciseData {
 
 export default function Breadcrumb() {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [classroom, setClassroom] = useState<ClassroomData | null>(
     null
   );
@@ -33,7 +34,7 @@ export default function Breadcrumb() {
       if (segments[0] === "classrooms" && segments[1]) {
         try {
           const response = await fetchFromDjangoClient(
-            `classroom/${segments[1]}/`
+            `api/classrooms/${segments[1]}/`
           );
           if (response.ok) {
             const data = await response.json();
@@ -41,15 +42,18 @@ export default function Breadcrumb() {
 
             // If we're in an exercise route
             if (segments[2]) {
-              const exerciseResponse = await fetchFromDjangoClient(
-                `exercise/${segments[2]}/`
-              );
-              if (exerciseResponse.ok) {
-                const exerciseData = await exerciseResponse.json();
-                setExercise({
-                  name: exerciseData.name,
-                  slug: exerciseData.slug,
-                });
+              const exerciseId = searchParams.get("id");
+              if (exerciseId) {
+                const exerciseResponse = await fetchFromDjangoClient(
+                  `api/exercises/${exerciseId}/`
+                );
+                if (exerciseResponse.ok) {
+                  const exerciseData = await exerciseResponse.json();
+                  setExercise({
+                    name: exerciseData.name,
+                    slug: exerciseData.slug,
+                  });
+                }
               }
             } else {
               setExercise(null);
@@ -62,7 +66,7 @@ export default function Breadcrumb() {
     }
 
     fetchData();
-  }, [pathname]);
+  }, [pathname, searchParams]);
 
   // Define fixed breadcrumb items
   const breadcrumbItems = [{ label: "Home", href: "/" }];
@@ -85,9 +89,10 @@ export default function Breadcrumb() {
 
   // Add exercise if available
   if (exercise && classroom && pathname?.includes("/classrooms/")) {
+    const exerciseId = searchParams.get("id");
     breadcrumbItems.push({
       label: exercise.name,
-      href: `/classrooms/${classroom.slug}/${exercise.slug}`,
+      href: `/classrooms/${classroom.slug}/${exercise.slug}?id=${exerciseId}`,
     });
   }
 

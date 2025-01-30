@@ -111,7 +111,7 @@ export default function SubmissionsPage() {
 
       try {
         const response = await fetchFromDjangoClient(
-          `exercise/${exerciseId}`
+          `api/exercises/${exerciseId}/`
         );
 
         if (!response.ok) {
@@ -135,7 +135,7 @@ export default function SubmissionsPage() {
 
       try {
         const response = await fetchFromDjangoClient(
-          `exercise/${exerciseId}/submissions`
+          `api/exercises/${exerciseId}/submissions/`
         );
 
         if (!response.ok) {
@@ -159,7 +159,7 @@ export default function SubmissionsPage() {
 
       try {
         const response = await fetchFromDjangoClient(
-          `exercise/${exerciseId}/tests`
+          `api/exercises/${exerciseId}/tests/`
         );
         if (!response.ok) {
           throw new Error("Failed to fetch tests");
@@ -244,7 +244,7 @@ export default function SubmissionsPage() {
 
     try {
       const response = await fetchFromDjangoClient(
-        `submission/${selectedSubmission.id}/update`,
+        `api/submissions/${selectedSubmission.id}/update/`,
         {
           method: "PUT",
           body: JSON.stringify({

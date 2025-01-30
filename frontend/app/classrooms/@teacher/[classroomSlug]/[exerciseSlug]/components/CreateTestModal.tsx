@@ -46,7 +46,7 @@ export default function CreateTestModal({
 
     try {
       const response = await fetchFromDjangoClient(
-        `exercise/${exerciseId}/tests`,
+        `api/exercises/${exerciseId}/tests/create/`,
         {
           method: "POST",
           body: JSON.stringify({

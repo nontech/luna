@@ -28,7 +28,7 @@ export default function Navbar() {
             alt="Luna Logo"
             width={32}
             height={32}
-            priority
+            loading="eager"
           />
         </Link>
         {user && (

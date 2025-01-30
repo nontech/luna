@@ -40,7 +40,7 @@ export default function DeleteClassroomModal({
 
     try {
       const response = await fetchFromDjangoClient(
-        `delete_classroom/${classroom.slug}`,
+        `api/classrooms/${classroom.slug}/delete/`,
         {
           method: "DELETE",
         }

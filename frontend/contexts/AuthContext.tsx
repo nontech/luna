@@ -46,7 +46,7 @@ export function AuthProvider({
     try {
       console.log("[Auth] Checking authentication status");
 
-      const response = await fetchFromDjangoClient("api/user/");
+      const response = await fetchFromDjangoClient("api/users/me/");
 
       if (response.ok) {
         const userData = await response.json();
@@ -98,16 +98,13 @@ export function AuthProvider({
       formData.append("username", email);
       formData.append("password", password);
 
-      const response = await fetchFromDjangoClient(
-        "accounts/login/",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-          },
-          body: formData,
-        }
-      );
+      const response = await fetchFromDjangoClient("auth/login/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: formData,
+      });
 
       const data = await response.json();
 
@@ -127,7 +124,7 @@ export function AuthProvider({
 
   const logout = async (): Promise<void> => {
     try {
-      const response = await fetchFromDjangoClient("logout/", {
+      const response = await fetchFromDjangoClient("auth/logout/", {
         method: "POST",
         headers: {
           Accept: "application/json",

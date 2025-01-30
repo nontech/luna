@@ -19,7 +19,7 @@ export function TestManager({ exerciseId }: { exerciseId: string }) {
   const fetchTests = useCallback(async () => {
     try {
       const response = await fetchFromDjangoClient(
-        `exercise/${exerciseId}/tests`
+        `api/exercises/${exerciseId}/tests/`
       );
       if (response.ok) {
         const data = await response.json();

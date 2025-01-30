@@ -34,7 +34,7 @@ export default function ClassroomsCard() {
 
   const fetchClassrooms = async () => {
     try {
-      const response = await fetchFromDjangoClient(`classrooms`);
+      const response = await fetchFromDjangoClient(`api/classrooms/`);
       const data = await response.json();
 
       // If the route handler returned an error, use that message

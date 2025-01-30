@@ -46,7 +46,7 @@ export default function EditExerciseModal({
 
     try {
       const response = await fetchFromDjangoClient(
-        `exercise/update/${exercise.id}`,
+        `api/exercises/${exercise.id}/update/`,
         {
           method: "PUT",
           body: JSON.stringify({
