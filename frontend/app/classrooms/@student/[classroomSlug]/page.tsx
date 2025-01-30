@@ -5,12 +5,6 @@ import { useEffect, useCallback, Suspense, useState } from "react";
 import { useParams } from "next/navigation";
 import { fetchFromDjangoClient } from "@/utils/clientApi";
 import { StudentExerciseList } from "./components/StudentExerciseList";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 
 interface Classroom {
   id: string;
