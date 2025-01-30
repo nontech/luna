@@ -30,94 +30,53 @@ from django.contrib.auth import views as auth_views
 router = DefaultRouter()
 
 urlpatterns = [
+    # Core Pages
     path('', home, name='home'),
+    path('codemirror-test/', codemirror_test),
     
-   # Lists
-
-   # Classroom List
-    path('classrooms', get_classrooms_list, name='get_classrooms_list'),
-
-    # Exercise List
-    path('classroom/<slug:classroom_slug>/exercises/', get_exercise_list, name='get_exercise_list'),
-
-    # Test List
-    path('exercise/<uuid:exercise_id>/tests/', get_tests_list, name='get_tests_list'),
-
-    # Submission List
-    path('exercise/<uuid:exercise_id>/submissions/', get_all_submissions, name='get_all_submissions'),
-   
+    # Authentication
+    path('auth/signup/', signup, name='signup'),
+    path('auth/login/', login_view, name='login'),
+    path('auth/logout/', logout_view, name='logout'),
+    path('auth/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('auth/', include('django.contrib.auth.urls')),  # Django auth URLs (password reset, etc.)
     
-    # Classroom CRUD
-
-    # Create
-    path('create_new_classroom', create_new_classroom, name='create_new_classroom'),
-    # Read
-    path('classroom/<slug:slug>/', get_classroom_details, name='get_classroom_details'),
-    # Update
-    path('update_classroom/<slug:slug>/', update_classroom_by_slug, name='update_classroom_by_slug'),
-    # Delete
-    path('delete_classroom/<slug:slug>/', delete_classroom_by_slug, name='delete_classroom_by_slug'),
-
+    # User
+    path('api/users/me/', get_user_details),
     
+    # Classrooms
+    path('api/classrooms/', get_classrooms_list),
+    path('api/classrooms/create/', create_new_classroom),
+    path('api/classrooms/<slug:slug>/', get_classroom_details),
+    path('api/classrooms/<slug:slug>/update/', update_classroom_by_slug),
+    path('api/classrooms/<slug:slug>/delete/', delete_classroom_by_slug),
+    path('api/classrooms/<slug:slug>/join/', join_classroom),
+    path('api/classrooms/<slug:slug>/leave/', leave_classroom),
     
-    # Exercise CRUD
+    # Exercises (nested under classrooms)
+    path('api/classrooms/<slug:classroom_slug>/exercises/', get_exercise_list),
+    path('api/classrooms/<slug:classroom_slug>/exercises/create/', create_new_exercise),
+    path('api/exercises/<uuid:exercise_id>/', get_exercise_details),
+    path('api/exercises/<uuid:exercise_id>/update/', update_exercise_by_id),
+    path('api/exercises/<uuid:exercise_id>/delete/', delete_exercise_by_id),
     
-    # Create
-    path('classroom/<slug:classroom_slug>/create_new_exercise/', create_new_exercise, name='create_new_exercise'),
-    # Read
-    path('exercise/<uuid:exercise_id>/', get_exercise_details, name='get_exercise_details'),
-    # Update
-    path('exercise/update/<uuid:exercise_id>/', update_exercise_by_id, name='update_exercise_by_id'),
-    # Delete
-    path('exercise/delete/<uuid:exercise_id>/', delete_exercise_by_id, name='delete_exercise_by_id'),
-
-    # Classroom Membership
-    path('classroom/<slug:slug>/join/', join_classroom, name='join_classroom'),
-    path('classroom/<slug:slug>/leave/', leave_classroom, name='leave_classroom'),
-
-    # Test CRUD
-
-    # Create
-    path('exercise/<uuid:exercise_id>/create_new_test/', create_new_test, name='create_new_test'),
-    # Read
-    path('test/<uuid:test_id>/', get_test_details, name='get_test_details'),
-    # Update
-    path('test/update/<uuid:test_id>/', update_test_by_id, name='update_test_by_id'),
-    # Delete
-    path('test/delete/<uuid:test_id>/', delete_test_by_id, name='delete_test_by_id'),
-
-    # Codemirror Test
-    path('codemirror-test/', codemirror_test, name='codemirror_test'),
-
-    # API
+    # Tests (nested under exercises)
+    path('api/exercises/<uuid:exercise_id>/tests/', get_tests_list),
+    path('api/exercises/<uuid:exercise_id>/tests/create/', create_new_test),
+    path('api/tests/<uuid:test_id>/', get_test_details),
+    path('api/tests/<uuid:test_id>/update/', update_test_by_id),
+    path('api/tests/<uuid:test_id>/delete/', delete_test_by_id),
+    
+    # Submissions (nested under exercises)
+    path('api/exercises/<uuid:exercise_id>/submissions/', get_all_submissions),
+    path('api/exercises/<uuid:exercise_id>/submissions/create/', create_submission),
+    path('api/exercises/<uuid:exercise_id>/submission/', get_submission_details),
+    path('api/submissions/<uuid:submission_id>/update/', update_submission),
+    
+    # Development/Testing
+    path('dev/email-test/', test_email),
+    
+    # DRF API root
     path('api/', include(router.urls)),
-
-    # Signup
-    path('signup/', signup, name='signup'),
-
-    # Test Email
-    path('email-test/', test_email, name='test_email'),
-
-    # Authentication endpoints
-    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    path('api/user/', get_user_details, name='user_details'),
-
-    # Auth URLs - put these first
-    path('accounts/login/', login_view, name='login'),
-    path('accounts/logout/', logout_view, name='logout'),
-    
-    # Include other auth URLs for password reset, etc.
-    path('accounts/', include('django.contrib.auth.urls')),
-
-    # path('api/test-cookies/', test_cookies, name='test_cookies'),
-
-    # Submission endpoints
-
-    # Create
-    path('exercise/<uuid:exercise_id>/submission/create/', create_submission, name='create_submission'),
-    # Read
-    path('exercise/<uuid:exercise_id>/submission/', get_submission_details, name='get_submission_details'),
-    # Update
-    path('submission/<uuid:submission_id>/update/', update_submission, name='update_submission'),
 ]
