@@ -74,7 +74,7 @@ export function CodeEditor({
         editorRef.current = null;
       }
     };
-  }, [initialCode, onChange, readOnly]);
+  }, [onChange, readOnly]);
 
   // Handle readOnly changes
   useEffect(() => {
@@ -82,24 +82,6 @@ export function CodeEditor({
       editorRef.current.setOption("readOnly", readOnly);
     }
   }, [readOnly]);
-
-  // Update value only when initialCode prop changes explicitly
-  useEffect(() => {
-    // Only proceed if editor exists and content has actually changed
-    if (
-      editorRef.current &&
-      initialCode !== editorRef.current.getValue()
-    ) {
-      // Save current cursor position
-      const cursor = editorRef.current.getCursor();
-
-      // Update editor content
-      editorRef.current.setValue(initialCode);
-
-      // Restore cursor to previous position
-      editorRef.current.setCursor(cursor);
-    }
-  }, [initialCode]); // Run this effect when initialCode changes
 
   return (
     <div

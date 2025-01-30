@@ -14,6 +14,7 @@ interface ExerciseCodeEditorProps {
   onRun: () => void;
   isRunning: boolean;
   isSubmitted: boolean;
+  submissionId?: string;
 }
 
 export function ExerciseCodeEditor({
@@ -22,6 +23,7 @@ export function ExerciseCodeEditor({
   onRun,
   isRunning,
   isSubmitted,
+  submissionId,
 }: ExerciseCodeEditorProps) {
   return (
     <Card>
@@ -35,14 +37,11 @@ export function ExerciseCodeEditor({
         </Button>
       </CardHeader>
       <CardContent>
-        <div>
+        <div className="min-h-[300px]">
           <CodeEditor
+            key={submissionId || "new"}
             initialCode={code}
-            onChange={(newCode) => {
-              if (!isSubmitted) {
-                onChange(newCode);
-              }
-            }}
+            onChange={isSubmitted ? undefined : onChange}
             readOnly={isSubmitted}
           />
         </div>

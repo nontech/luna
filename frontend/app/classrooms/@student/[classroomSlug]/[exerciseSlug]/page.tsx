@@ -99,7 +99,10 @@ export default function StudentExercisePage() {
         if (submissionRes.ok) {
           const submissionData = await submissionRes.json();
           setSubmission(submissionData);
-          setCode(submissionData?.submitted_code || "");
+          // Only set code from submission if it exists
+          if (submissionData) {
+            setCode(submissionData.submitted_code);
+          }
         }
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -131,7 +134,7 @@ export default function StudentExercisePage() {
       // Create new submission if none exists
       if (!submission) {
         const response = await fetchFromDjangoClient(
-          `api/exercises/${exercise.id}/submissions/create`,
+          `api/exercises/${exercise.id}/submissions/create/`,
           {
             method: "POST",
             body: JSON.stringify({ code }),
@@ -303,6 +306,7 @@ export default function StudentExercisePage() {
             onRun={handleRunCode}
             isRunning={isRunning}
             isSubmitted={isSubmitted}
+            submissionId={submission?.id}
           />
         </div>
 
