@@ -1187,12 +1187,17 @@ def get_all_submissions(request, exercise_id):
                 'error': 'Only teachers can view all submissions'
             }, status=403)
             
-        # Get all submissions for this exercise
-        submissions = Submissions.objects.filter(exercise_id=exercise_id).select_related('student')
+        # Get status filter from query params
+        status_filter = request.GET.get('status', '').split(',')
         
-        # Debug print
-        for submission in submissions:
-            print(f"Student data - ID: {submission.student.id}, Email: {submission.student.email}, Name: {submission.student.first_name} {submission.student.last_name}")
+        # Base query for submissions
+        submissions_query = Submissions.objects.filter(exercise_id=exercise_id).select_related('student')
+        
+        # Apply status filter if provided
+        if status_filter and status_filter[0]:  # Check if status_filter is not empty
+            submissions_query = submissions_query.filter(status__in=status_filter)
+        
+        submissions = submissions_query.all()
         
         # Extract submission data with detailed student info
         submissions_data = [{
@@ -1212,9 +1217,6 @@ def get_all_submissions(request, exercise_id):
             'created_at': submission.created_at.isoformat(),
             'updated_at': submission.updated_at.isoformat()
         } for submission in submissions]
-        
-        # Debug print
-        print("Submissions data:", submissions_data)
         
         return JsonResponse({
             'submissions': submissions_data

@@ -135,7 +135,7 @@ export default function SubmissionsPage() {
 
       try {
         const response = await fetchFromDjangoClient(
-          `api/exercises/${exerciseId}/submissions/`
+          `api/exercises/${exerciseId}/submissions/?status=submitted_by_student,reviewed_by_teacher`
         );
 
         if (!response.ok) {
