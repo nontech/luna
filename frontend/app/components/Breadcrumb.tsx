@@ -16,7 +16,8 @@ interface ExerciseData {
   slug: string;
 }
 
-export default function Breadcrumb() {
+// Client component that uses search params
+function BreadcrumbContent() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [classroom, setClassroom] = useState<ClassroomData | null>(
@@ -117,4 +118,9 @@ export default function Breadcrumb() {
       ))}
     </nav>
   );
+}
+
+// Main component that can be imported and used in layouts
+export default function Breadcrumb() {
+  return <BreadcrumbContent />;
 }
