@@ -26,9 +26,6 @@ export default function CreateExerciseModal({
 }: CreateExerciseModalProps) {
   const [open, setOpen] = useState(false);
   const [exerciseName, setExerciseName] = useState("");
-  const [instructions, setInstructions] = useState("");
-  const [outputInstructions, setOutputInstructions] = useState("");
-  const [code, setCode] = useState("");
   const [isCreating, setIsCreating] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -45,9 +42,6 @@ export default function CreateExerciseModal({
           method: "POST",
           body: JSON.stringify({
             name: exerciseName,
-            instructions,
-            output_instructions: outputInstructions,
-            code,
           }),
         }
       );
@@ -64,9 +58,6 @@ export default function CreateExerciseModal({
         setOpen(false);
         setIsSuccess(false);
         setExerciseName("");
-        setInstructions("");
-        setOutputInstructions("");
-        setCode("");
         router.push(
           `/classrooms/${classroomSlug}/${data.slug}?id=${data.id}`
         );
@@ -92,8 +83,7 @@ export default function CreateExerciseModal({
         <DialogHeader>
           <DialogTitle>Create a New Exercise</DialogTitle>
           <DialogDescription>
-            Enter details for your new exercise. Click create when
-            you&apos;re done.
+            Enter a name for your new exercise.
           </DialogDescription>
         </DialogHeader>
         {!isSuccess ? (
@@ -101,7 +91,7 @@ export default function CreateExerciseModal({
             <div className="grid gap-4 py-4">
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="name" className="text-right">
-                  Name
+                  Name *
                 </Label>
                 <Input
                   id="name"
@@ -109,47 +99,7 @@ export default function CreateExerciseModal({
                   onChange={(e) => setExerciseName(e.target.value)}
                   className="col-span-3"
                   placeholder="Enter exercise name"
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="instructions" className="text-right">
-                  Instructions
-                </Label>
-                <Textarea
-                  id="instructions"
-                  value={instructions}
-                  onChange={(e) => setInstructions(e.target.value)}
-                  className="col-span-3"
-                  placeholder="Enter exercise instructions"
-                  rows={3}
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="output" className="text-right">
-                  Output
-                </Label>
-                <Textarea
-                  id="output"
-                  value={outputInstructions}
-                  onChange={(e) =>
-                    setOutputInstructions(e.target.value)
-                  }
-                  className="col-span-3"
-                  placeholder="Enter expected output"
-                  rows={2}
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="code" className="text-right">
-                  Initial Code
-                </Label>
-                <Textarea
-                  id="code"
-                  value={code}
-                  onChange={(e) => setCode(e.target.value)}
-                  className="col-span-3"
-                  placeholder="Enter initial code template"
-                  rows={4}
+                  required
                 />
               </div>
               {error && (
