@@ -34,7 +34,6 @@ export default function EditExerciseModal({
   const [formData, setFormData] = useState({
     name: exercise.name,
     instructions: exercise.instructions,
-    code: exercise.code,
   });
   const [isUpdating, setIsUpdating] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -52,7 +51,6 @@ export default function EditExerciseModal({
           body: JSON.stringify({
             name: formData.name,
             instructions: formData.instructions,
-            code: formData.code,
             classroomSlug,
           }),
         }
@@ -85,8 +83,7 @@ export default function EditExerciseModal({
 
   const hasChanges =
     formData.name !== exercise.name ||
-    formData.instructions !== exercise.instructions ||
-    formData.code !== exercise.code;
+    formData.instructions !== exercise.instructions;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -115,21 +112,12 @@ export default function EditExerciseModal({
                 <Textarea
                   id="instructions"
                   value={formData.instructions}
+                  rows={12}
                   onChange={(e) =>
                     setFormData({
                       ...formData,
                       instructions: e.target.value,
                     })
-                  }
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="code">Initial Code</Label>
-                <Textarea
-                  id="code"
-                  value={formData.code}
-                  onChange={(e) =>
-                    setFormData({ ...formData, code: e.target.value })
                   }
                 />
               </div>
