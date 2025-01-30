@@ -59,7 +59,7 @@ export default function Navbar() {
           </>
         ) : (
           <Link
-            href={`${process.env.NEXT_PUBLIC_API_URL}/accounts/login/`}
+            href={`${process.env.NEXT_PUBLIC_API_URL}/auth/login/`}
             className="btn btn-primary btn-sm"
           >
             Login
