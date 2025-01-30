@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { AuthButtons } from "@/app/components/AuthButtons";
 
 export default function LandingPage() {
   return (
@@ -58,19 +59,8 @@ export default function LandingPage() {
                     </ul>
                   </div>
                 </div>
-                <div className="mt-10 flex items-center justify-center gap-x-6">
-                  <a
-                    href={`${process.env.NEXT_PUBLIC_API_URL}/auth/signup/`}
-                    className="rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-                  >
-                    Create Account
-                  </a>
-                  <a
-                    href={`${process.env.NEXT_PUBLIC_API_URL}/auth/login/`}
-                    className="rounded-md bg-white px-3.5 py-2.5 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
-                  >
-                    Login
-                  </a>
+                <div className="mt-10">
+                  <AuthButtons className="justify-center" />
                 </div>
               </div>
             </div>
