@@ -1,6 +1,7 @@
 "use client";
 
 import { useAuth } from "@/contexts/AuthContext";
+import UnauthorizedMessage from "./UnauthorizedMessage";
 import React from "react";
 
 export default function ClientLayout({
@@ -10,19 +11,13 @@ export default function ClientLayout({
   teacher: React.ReactNode;
   student: React.ReactNode;
 }) {
-  const { user, isLoading } = useAuth();
-
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
+  const { user } = useAuth();
 
   return (
     <div className="pl-20 pt-10">
       {user?.user_role === "teacher" && teacher}
       {user?.user_role === "student" && student}
-      {!user?.user_role && (
-        <div>Unauthorized - You are at /classrooms/layout.tsx</div>
-      )}
+      {!user?.user_role && <UnauthorizedMessage />}
     </div>
   );
 }
