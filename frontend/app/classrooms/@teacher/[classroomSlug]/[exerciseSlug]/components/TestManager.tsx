@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
-import { Button } from "@/components/ui/button";
 import CreateTestModal from "./CreateTestModal";
+import EditTestModal from "./EditTestModal";
+import DeleteTestModal from "./DeleteTestModal";
 import { fetchFromDjangoClient } from "@/utils/clientApi";
 
 interface Test {
@@ -59,24 +60,14 @@ export function TestManager({ exerciseId }: { exerciseId: string }) {
                 </p>
               </div>
               <div className="space-x-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    // TODO: Implement edit functionality
-                  }}
-                >
-                  Edit
-                </Button>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={() => {
-                    // TODO: Implement delete functionality
-                  }}
-                >
-                  Delete
-                </Button>
+                <EditTestModal
+                  test={test}
+                  onTestUpdated={fetchTests}
+                />
+                <DeleteTestModal
+                  test={test}
+                  onTestDeleted={fetchTests}
+                />
               </div>
             </div>
             <div className="mt-4 space-y-2">
@@ -89,7 +80,7 @@ export function TestManager({ exerciseId }: { exerciseId: string }) {
               <div>
                 <h4 className="font-medium">Help Text</h4>
                 <p className="text-sm text-gray-600 mt-1">
-                  {test.help_text}
+                  {test.help_text || "No help text provided"}
                 </p>
               </div>
             </div>

@@ -62,9 +62,9 @@ urlpatterns = [
     # Tests (nested under exercises)
     path('api/exercises/<uuid:exercise_id>/tests/', get_tests_list),
     path('api/exercises/<uuid:exercise_id>/tests/create/', create_new_test),
-    path('api/tests/<uuid:test_id>/', get_test_details),
-    path('api/tests/<uuid:test_id>/update/', update_test_by_id),
-    path('api/tests/<uuid:test_id>/delete/', delete_test_by_id),
+    path('api/tests/<int:test_id>/', get_test_details),
+    path('api/tests/<int:test_id>/update/', update_test_by_id),
+    path('api/tests/<int:test_id>/delete/', delete_test_by_id),
     
     # Submissions (nested under exercises)
     path('api/exercises/<uuid:exercise_id>/submissions/', get_all_submissions),
