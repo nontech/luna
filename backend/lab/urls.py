@@ -1,8 +1,7 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import (
-    home, codemirror_test,
-    create_new_classroom, get_classroom_details, 
+    home,create_new_classroom, get_classroom_details, 
     update_classroom_by_slug, delete_classroom_by_slug, 
     get_classrooms_list, create_new_exercise,
     update_exercise_by_id, delete_exercise_by_id,
@@ -32,7 +31,6 @@ router = DefaultRouter()
 urlpatterns = [
     # Core Pages
     path('', home, name='home'),
-    path('codemirror-test/', codemirror_test),
     
     # Authentication
     path('auth/signup/', signup, name='signup'),

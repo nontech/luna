@@ -32,7 +32,6 @@ from rest_framework.decorators import (
 )
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
-from .serializers import ClassroomSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.authentication import SessionAuthentication
 from rest_framework_simplejwt.authentication import JWTAuthentication
@@ -74,22 +73,6 @@ from .forms import EmailSignUpForm
 #    ...
 
 # Create your views here.
-
-def codemirror_test(request):
-    initial_code = """
-def fibonacci(n):
-    if n <= 1:
-        return n
-    else:
-        return fibonacci(n-1) + fibonacci(n-2)
-
-result = [fibonacci(i) for i in range(10)]
-print(result)  # This will be captured by Pyodide
-result  # This will be returned as the output
-"""
-    context = {'code': mark_safe(initial_code)}
-    return render(request, 'codemirror_test.html', context)
-
 
 def home(request):
     return render(request, 'home.html')
