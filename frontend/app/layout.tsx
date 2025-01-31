@@ -39,6 +39,10 @@ export default function RootLayout({
           src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/mode/python/python.min.js"
           strategy="beforeInteractive"
         />
+        <Script
+          src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"
+          strategy="beforeInteractive"
+        />
       </head>
       <body suppressHydrationWarning>
         <Providers>{children}</Providers>
