@@ -265,20 +265,34 @@ def sync_input(prompt=""):
 input = sync_input
     `);
 
-    // Indent the code to make it easier to read
-
-    // # User's original code
-    // print("Hello")
-    // name = input("Name? ")
-    // print(f"Hi {name}")
-
-    // # After indentation
-    //         print("Hello")
-    //         name = input("Name? ")
-    //         print(f"Hi {name}")
-    const indentedCode = code
+    // Transform the code to add async to function definitions and await to input calls
+    const transformedCode = code
       .split("\n")
-      .map((line) => (line.trim() ? "        " + line : line))
+      .map((line) => {
+        const trimmedLine = line.trim();
+        if (trimmedLine.startsWith("def ")) {
+          // Add async to function definitions
+          return line.replace("def ", "async def ");
+        }
+        if (line.includes("input(")) {
+          // Add await to input calls
+          return line.replace(/input\((.*?)\)/g, "await input($1)");
+        }
+        // Match any direct function call that we defined (ends with parentheses)
+        if (/^[a-zA-Z_][a-zA-Z0-9_]*\(\)$/.test(trimmedLine)) {
+          // Add await to function calls
+          return line.replace(
+            /([a-zA-Z_][a-zA-Z0-9_]*)\(\)/,
+            "await $1()"
+          );
+        }
+        return line;
+      })
+      .join("\n");
+
+    const indentedCode = transformedCode
+      .split("\n")
+      .map((line) => "      " + line) // Add 6 spaces to EVERY line
       .join("\n");
 
     // 4. Prepare user code
@@ -288,7 +302,6 @@ async def __run_code():
     # Makes our custom input function available to the user's code
     global input
     try:
-# User's indented code goes here
 ${indentedCode}
     except Exception as e:
         _original_stderr.write(f"Error in user code: {str(e)}\\n")
@@ -297,7 +310,6 @@ ${indentedCode}
     // 5. First Call: Define the function
     await pyodide.runPythonAsync(wrappedCode);
 
-    console.log("Running user code...");
     try {
       // 6. Second Call: Execute the function meaning run the user's code
       const runCodePromise = pyodide.runPythonAsync(
