@@ -5,18 +5,11 @@ import Link from "next/link";
 import clsx from "clsx";
 import { useAuth } from "@/contexts/AuthContext";
 import Image from "next/image";
+import { LoginButton, LogoutButton } from "./AuthButtons";
 
 export default function Navbar() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const pathname = usePathname();
-
-  const handleLogout = async () => {
-    try {
-      await logout();
-    } catch (error) {
-      console.error("Logout failed:", error);
-    }
-  };
 
   return (
     <div className="navbar bg-[#8c52ff]">
@@ -50,20 +43,10 @@ export default function Navbar() {
             <div className="text-white text-sm">
               Welcome, {user.username}!, You are a {user.user_role}
             </div>
-            <button
-              onClick={handleLogout}
-              className="btn btn-error btn-sm"
-            >
-              Logout
-            </button>
+            <LogoutButton />
           </>
         ) : (
-          <Link
-            href={`${process.env.NEXT_PUBLIC_API_URL}/auth/login/`}
-            className="btn btn-primary btn-sm"
-          >
-            Login
-          </Link>
+          <LoginButton />
         )}
       </div>
     </div>

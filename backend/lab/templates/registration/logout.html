@@ -15,9 +15,13 @@
       <button type="submit" class="btn btn-primary">
         Yes, logout
       </button>
-      <a href="{% url 'home' %}" class="btn btn-outline ml-2">
+      <button
+        type="button"
+        onclick="history.back()"
+        class="btn btn-outline ml-2"
+      >
         Cancel
-      </a>
+      </button>
     </form>
   </div>
 </div>

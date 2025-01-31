@@ -17,13 +17,24 @@ export function CreateAccountButton({
   );
 }
 
-export function SignInButton({ className = "" }: AuthButtonProps) {
+export function LoginButton({ className = "" }: AuthButtonProps) {
   return (
     <Link
       href={`${process.env.NEXT_PUBLIC_API_URL}/auth/login/`}
       className={`rounded-md bg-white px-3.5 py-2.5 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 ${className}`}
     >
-      Sign In
+      Login
+    </Link>
+  );
+}
+
+export function LogoutButton({ className = "" }: AuthButtonProps) {
+  return (
+    <Link
+      href={`${process.env.NEXT_PUBLIC_API_URL}/auth/logout/`}
+      className={`btn btn-error btn-sm ${className}`}
+    >
+      Logout
     </Link>
   );
 }
@@ -33,7 +44,7 @@ export function AuthButtons({ className = "" }: AuthButtonProps) {
   return (
     <div className={`flex items-center gap-x-6 ${className}`}>
       <CreateAccountButton />
-      <SignInButton />
+      <LoginButton />
     </div>
   );
 }
