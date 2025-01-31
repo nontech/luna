@@ -271,16 +271,30 @@ input = sync_input
       .map((line) => {
         const trimmedLine = line.trim();
         if (trimmedLine.startsWith("def ")) {
-          // Add async to function definitions
           return line.replace("def ", "async def ");
         }
         if (line.includes("input(")) {
-          // Add await to input calls
-          return line.replace(/input\((.*?)\)/g, "await input($1)");
+          // Fix the regex to handle float(), int(), and method chaining
+          const transformed = line.replace(
+            /(?:float|int)\(input\((.*?)\)\.strip\(\)\)|input\((["'].*?["'])\)((?:\.[a-zA-Z_][a-zA-Z0-9_]*(?:\(\))?)*)/g,
+            (match, numArg, inputArg, methods) => {
+              if (numArg) {
+                // Handle float(input(...).strip()) or int(input(...).strip()) case
+                const func = match.startsWith("float")
+                  ? "float"
+                  : "int";
+                return `${func}((await input(${numArg})).strip())`;
+              }
+              // Handle normal input(...).method() case
+              return `((lambda x: x${
+                methods || ""
+              })(await input(${inputArg})))`;
+            }
+          );
+          console.log("Transformed to:", transformed);
+          return transformed;
         }
-        // Match any direct function call that we defined (ends with parentheses)
         if (/^[a-zA-Z_][a-zA-Z0-9_]*\(\)$/.test(trimmedLine)) {
-          // Add await to function calls
           return line.replace(
             /([a-zA-Z_][a-zA-Z0-9_]*)\(\)/,
             "await $1()"
@@ -341,8 +355,33 @@ ${indentedCode}
 
       return { output: output || "" };
     } catch (error: any) {
-      console.error("Error during code execution:", error);
-      throw error;
+      console.error("Detailed error information:", {
+        error,
+        pyodideState: pyodide
+          ? {
+              globals: pyodide.globals
+                ? Object.keys(pyodide.globals)
+                : [],
+            }
+          : "Not initialized",
+      });
+
+      // Get the full error traceback if available
+      const errorMessage =
+        error.message || "An error occurred while running the code";
+
+      // Show the error in the output
+      if (outputCallback) {
+        outputCallback({
+          type: "output",
+          content: `Error: ${errorMessage}`,
+        });
+      }
+
+      return {
+        output: errorMessage,
+        error: errorMessage,
+      };
     }
   } catch (error: any) {
     console.error("Detailed error information:", {
@@ -355,12 +394,22 @@ ${indentedCode}
           }
         : "Not initialized",
     });
+
+    // Get the full error traceback if available
+    const errorMessage =
+      error.message || "An error occurred while running the code";
+
+    // Show the error in the output
+    if (outputCallback) {
+      outputCallback({
+        type: "output",
+        content: `Error: ${errorMessage}`,
+      });
+    }
+
     return {
-      output: "",
-      error:
-        error instanceof Error
-          ? error.message
-          : "An error occurred while running the code",
+      output: errorMessage,
+      error: errorMessage,
     };
   }
 }
