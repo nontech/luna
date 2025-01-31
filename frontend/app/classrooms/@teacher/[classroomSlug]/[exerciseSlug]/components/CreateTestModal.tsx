@@ -96,8 +96,8 @@ export default function CreateTestModal({
         <DialogHeader>
           <DialogTitle>Create a New Test</DialogTitle>
           <DialogDescription>
-            Create a test to verify student submissions. Click create
-            when you&apos;re done.
+            Create a test to run your code against the expected
+            output. Click create when you&apos;re done.
           </DialogDescription>
         </DialogHeader>
         {!isSuccess ? (
@@ -188,8 +188,7 @@ export default function CreateTestModal({
                 disabled={
                   isCreating ||
                   !testName.trim() ||
-                  !expectedOutput.trim() ||
-                  !helpText.trim()
+                  !expectedOutput.trim()
                 }
               >
                 {isCreating ? "Creating..." : "Create Test"}
